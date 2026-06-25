@@ -351,6 +351,7 @@ const HRS_PER_DAY = 8, SECS_PER_DAY = HRS_PER_DAY * 3600;
 let allIssues=[], cExec=null, cExecTime=null;
 let sortMode='tasks', activeTab='all', activePage='ejecutivo';
 let _lastUsers=[], _lastIss=[], _lastIdle=[], _lastEncN=0, _lastPorN=0, _lastThr=7;
+let doneFrom=null, doneTo=null;
 const msState={proj:new Set(),user:new Set()};
 const msItems={proj:[],user:[]};
 let _userIdMap={};
@@ -547,7 +548,17 @@ function renderAll(){
   let issDetail=iss.filter(i=>!isDone(i.fields.status?.name));
   if(activeTab==='enc')issDetail=issDetail.filter(i=>sCat(i.fields.status?.name)==='enc');
   else if(activeTab==='por')issDetail=issDetail.filter(i=>sCat(i.fields.status?.name)==='por');
-  else if(activeTab==='done')issDetail=iss.filter(i=>isDone(i.fields.status?.name));
+  else if(activeTab==='done'){
+    issDetail=iss.filter(i=>isDone(i.fields.status?.name));
+    if(doneFrom||doneTo){
+      issDetail=issDetail.filter(i=>{
+        const d=new Date(i.fields.updated||i.fields.created);
+        if(doneFrom && d < doneFrom) return false;
+        if(doneTo){const end=new Date(doneTo);end.setHours(23,59,59,999);if(d>end)return false;}
+        return true;
+      });
+    }
+  }
   const byUd={};issDetail.forEach(i=>{const k=i._userId;if(!k)return;if(!byUd[k])byUd[k]={name:i._userName||k,id:k,tasks:[]};byUd[k].tasks.push(i);});
   const usersDetail=Object.values(byUd).sort((a,b)=>b.tasks.length-a.tasks.length);
   renderIdle(idle);renderTabs(encN,porN,activeN,doneN);
@@ -625,7 +636,27 @@ function renderCards(users,thr){
 
 // ── IDLE BOX ───────────────────────────────────────────────────────────────────
 function renderIdle(idle){const b=document.getElementById('ib');if(!idle.length){b.style.display='none';return;}b.style.display='';document.getElementById('ic').innerHTML=idle.map(i=>`<span class="idle-chip">⏸ ${i.key} · ${aName(respUser(i.fields))?.split(' ')[0]||'?'} · ${dAgo(i.fields.updated)}d</span>`).join('');}
-function renderTabs(e,p,a,dn){document.getElementById('tabs').innerHTML=`<span class="tab t-all ${activeTab==='all'?'on':''}" onclick="setTab('all')">Activas<span class="tc">${a}</span></span><span class="tab t-enc ${activeTab==='enc'?'on':''}" onclick="setTab('enc')">● En Curso<span class="tc">${e}</span></span><span class="tab t-por ${activeTab==='por'?'on':''}" onclick="setTab('por')">● Por Hacer<span class="tc">${p}</span></span><span class="tab t-done ${activeTab==='done'?'on':''}" onclick="setTab('done')">✅ Finalizadas<span class="tc">${dn||0}</span></span>`;}
+function renderTabs(e,p,a,dn){
+  const df=doneFrom?doneFrom.toISOString().slice(0,10):'';
+  const dt=doneTo?doneTo.toISOString().slice(0,10):'';
+  const datePicker=activeTab==='done'?`
+    <span style="display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:3px 8px;background:#fff;border:1px solid var(--g300);border-radius:6px;font-size:11px;color:var(--g700)">
+      <span style="color:var(--g500)">📅 Desde</span>
+      <input type="date" id="df-from" value="${df}" style="border:none;outline:none;font-size:11px;color:var(--g700);cursor:pointer;background:transparent" onchange="setDoneFilter(this.value, document.getElementById('df-to').value)">
+      <span style="color:var(--g300)">→</span>
+      <span style="color:var(--g500)">Hasta</span>
+      <input type="date" id="df-to" value="${dt}" style="border:none;outline:none;font-size:11px;color:var(--g700);cursor:pointer;background:transparent" onchange="setDoneFilter(document.getElementById('df-from').value, this.value)">
+      ${(doneFrom||doneTo)?`<span onclick="clearDoneFilter()" style="cursor:pointer;color:var(--red);font-size:11px;margin-left:2px;font-weight:700" title="Limpiar filtro">✕</span>`:''}
+    </span>`:''
+  ;
+  document.getElementById('tabs').innerHTML=`<span class="tab t-all ${activeTab==='all'?'on':''}" onclick="setTab('all')">Activas<span class="tc">${a}</span></span><span class="tab t-enc ${activeTab==='enc'?'on':''}" onclick="setTab('enc')">● En Curso<span class="tc">${e}</span></span><span class="tab t-por ${activeTab==='por'?'on':''}" onclick="setTab('por')">● Por Hacer<span class="tc">${p}</span></span><span class="tab t-done ${activeTab==='done'?'on':''}" onclick="setTab('done')">✅ Finalizadas<span class="tc">${dn||0}</span></span>${datePicker}`;
+}
+function setDoneFilter(from,to){
+  doneFrom=from?new Date(from+'T00:00:00'):null;
+  doneTo=to?new Date(to+'T00:00:00'):null;
+  renderAll();
+}
+function clearDoneFilter(){doneFrom=null;doneTo=null;renderAll();}
 
 // ── USER DETAIL ────────────────────────────────────────────────────────────────
 function renderUsers(users,thr){
