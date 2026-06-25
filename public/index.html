@@ -288,6 +288,32 @@ tr:hover .tlink{color:var(--blue);text-decoration:underline}
         </div>
       </div>
     </div>
+    <span class="fl">Estado:</span>
+    <div class="ms-wrap" id="ms-status-wrap">
+      <div class="ms-trigger" onclick="toggleMs('status')">
+        <span class="ms-label" id="ms-status-label">Todos</span>
+        <span class="ms-badge" id="ms-status-badge" style="display:none">0</span>
+        <span class="ms-arrow">▾</span>
+      </div>
+      <div class="ms-dropdown" id="ms-status-dd">
+        <div class="ms-search"><input type="text" placeholder="Buscar estado…" oninput="filterMs('status',this.value)" id="ms-status-q"></div>
+        <div class="ms-opts" id="ms-status-opts"></div>
+        <div class="ms-foot">
+          <span class="ms-foot-count" id="ms-status-count">0 seleccionados</span>
+          <div class="ms-foot-btns">
+            <button class="ms-foot-btn sel-all" onclick="selectAllMs('status')">Todos</button>
+            <button class="ms-foot-btn clear" onclick="clearMs('status')">Limpiar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="fl">Fecha:</span>
+    <div style="display:flex;align-items:center;gap:4px;border:1px solid var(--g300);border-radius:6px;padding:3px 8px;background:#fff" onfocusin="this.style.borderColor='var(--blue)'" onfocusout="this.style.borderColor='var(--g300)'">
+      <input type="date" id="gf-from" style="border:none;outline:none;font-size:11px;color:var(--g700);cursor:pointer;background:transparent" title="Desde" onchange="setGlobalFilter(this.value, document.getElementById('gf-to').value)">
+      <span style="color:var(--g300);font-size:11px">→</span>
+      <input type="date" id="gf-to" style="border:none;outline:none;font-size:11px;color:var(--g700);cursor:pointer;background:transparent" title="Hasta" onchange="setGlobalFilter(document.getElementById('gf-from').value, this.value)">
+      <span id="gf-clear" onclick="clearGlobalFilter()" style="display:none;cursor:pointer;color:var(--red);font-size:12px;font-weight:700;margin-left:2px" title="Limpiar fechas">✕</span>
+    </div>
     <span class="fl">Ocioso ≥</span>
     <select id="fI" onchange="renderAll()">
       <option value="3">3d</option><option value="5">5d</option><option value="7" selected>7d</option><option value="10">10d</option>
@@ -360,9 +386,10 @@ let allIssues=[], cExec=null, cExecTime=null;
 let sortMode='tasks', activeTab='all', activePage='ejecutivo';
 let _lastUsers=[], _lastIss=[], _lastIdle=[], _lastEncN=0, _lastPorN=0, _lastThr=7;
 let doneFrom=null, doneTo=null;
+let filterFrom=null, filterTo=null;
 let searchQ='';
-const msState={proj:new Set(),user:new Set()};
-const msItems={proj:[],user:[]};
+const msState={proj:new Set(),user:new Set(),status:new Set()};
+const msItems={proj:[],user:[],status:[]};
 let _userIdMap={};
 
 // ── JIRA API PROXY CALL ────────────────────────────────────────────────────────
@@ -431,7 +458,8 @@ async function loadData(){
     const seenUsers={};
     normed.forEach(i=>{ if(i._userId&&!seenUsers[i._userId]) seenUsers[i._userId]={id:i._userId,name:i._userName}; });
     const userList=Object.values(seenUsers).sort((a,b)=>a.name.localeCompare(b.name));
-    buildMs('proj',projs); buildMsUsers(userList);
+    const statuses=[...new Set(normed.map(i=>i.fields.status?.name).filter(Boolean))].sort();
+    buildMs('proj',projs); buildMsUsers(userList); buildMs('status',statuses);
     document.getElementById('lu').textContent =
       new Date().toLocaleString('es-PY',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
     document.getElementById('wl').textContent = '📅 Semana: '+wkR();
@@ -488,7 +516,7 @@ function sBadge(s){const n=(s||'').toLowerCase();if(n.includes('curso')||n.inclu
 function showToast(msg,dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 
 // ── MULTI-SELECT ───────────────────────────────────────────────────────────────
-function toggleMs(id){const wrap=document.getElementById('ms-'+id+'-wrap');const isOpen=wrap.classList.contains('open');['proj','user'].forEach(x=>{document.getElementById('ms-'+x+'-wrap').classList.remove('open');document.getElementById('ms-'+x+'-q').value='';filterMs(x,'');});if(!isOpen){wrap.classList.add('open');document.getElementById('ms-'+id+'-q').focus();}}
+function toggleMs(id){const wrap=document.getElementById('ms-'+id+'-wrap');const isOpen=wrap.classList.contains('open');['proj','user','status'].forEach(x=>{const w=document.getElementById('ms-'+x+'-wrap');if(w){w.classList.remove('open');}const q=document.getElementById('ms-'+x+'-q');if(q){q.value='';filterMs(x,'');}});if(!isOpen){wrap.classList.add('open');document.getElementById('ms-'+id+'-q').focus();}}
 function buildMs(id,items){msItems[id]=items;const opts=document.getElementById('ms-'+id+'-opts');opts.innerHTML=items.map(item=>`<label class="ms-opt"><input type="checkbox" value="${item.replace(/"/g,'&quot;')}" onchange="toggleMsItem('${id}',this.value,this.checked)" ${msState[id].has(item)?'checked':''}><span>${item}</span></label>`).join('');updateMsLabel(id);}
 function buildMsUsers(userList){_userIdMap={};userList.forEach(u=>{_userIdMap[u.id]=u.name;});msItems.user=userList.map(u=>u.id);const opts=document.getElementById('ms-user-opts');opts.innerHTML=userList.map(u=>`<label class="ms-opt"><input type="checkbox" value="${u.id.replace(/"/g,'&quot;')}" onchange="toggleMsItem('user',this.value,this.checked)" ${msState.user.has(u.id)?'checked':''}><span>${u.name}</span></label>`).join('');updateMsLabel('user');}
 function toggleMsItem(id,val,checked){if(checked)msState[id].add(val);else msState[id].delete(val);updateMsLabel(id);renderAll();}
@@ -496,7 +524,7 @@ function clearMs(id){msState[id].clear();document.querySelectorAll('#ms-'+id+'-o
 function selectAllMs(id){msItems[id].forEach(item=>msState[id].add(item));document.querySelectorAll('#ms-'+id+'-opts input').forEach(cb=>{if(cb.closest('.ms-opt').style.display!=='none')cb.checked=true;});updateMsLabel(id);renderAll();}
 function filterMs(id,q){const query=q.toLowerCase();document.querySelectorAll('#ms-'+id+'-opts .ms-opt').forEach(opt=>{opt.style.display=opt.querySelector('span').textContent.toLowerCase().includes(query)?'':'none';});}
 function updateMsLabel(id){const count=msState[id].size,total=msItems[id].length;const label=document.getElementById('ms-'+id+'-label'),badge=document.getElementById('ms-'+id+'-badge'),countEl=document.getElementById('ms-'+id+'-count');if(count===0){label.textContent='Todos';label.classList.remove('has-sel');badge.style.display='none';}else{label.textContent=count===total?'Todos':count+' '+(id==='proj'?'proyecto':'usuario')+(count>1?'s':'');label.classList.add('has-sel');badge.textContent=count;badge.style.display='';}countEl.textContent=count+' seleccionado'+(count!==1?'s':'');}
-document.addEventListener('click',e=>{if(!e.target.closest('.ms-wrap'))['proj','user'].forEach(x=>document.getElementById('ms-'+x+'-wrap').classList.remove('open'));});
+document.addEventListener('click',e=>{if(!e.target.closest('.ms-wrap'))['proj','user','status'].forEach(x=>{const w=document.getElementById('ms-'+x+'-wrap');if(w)w.classList.remove('open');});});
 
 // ── PAGE & TAB NAV ─────────────────────────────────────────────────────────────
 function setPage(p){activePage=p;['ejecutivo','detalle','direccion'].forEach(x=>{document.getElementById('pn-'+x).classList.toggle('on',x===p);document.getElementById('v-'+x).classList.toggle('on',x===p);});if(p==='direccion')renderDireccion(_lastUsers,_lastIss,_lastIdle,_lastEncN,_lastPorN,_lastThr);}
@@ -515,6 +543,21 @@ function goToUser(uid){
     el.style.outline='3px solid var(--blue)';el.style.boxShadow='0 0 0 4px rgba(0,82,204,.2)';
     setTimeout(()=>{el.style.outline='';el.style.boxShadow='';},2200);
   },80);
+}
+
+// ── GLOBAL DATE FILTER ────────────────────────────────────────────────────────
+function setGlobalFilter(from,to){
+  filterFrom=from?new Date(from+'T00:00:00'):null;
+  filterTo=to?new Date(to+'T00:00:00'):null;
+  document.getElementById('gf-clear').style.display=(filterFrom||filterTo)?'':'none';
+  renderAll();
+}
+function clearGlobalFilter(){
+  filterFrom=null;filterTo=null;
+  document.getElementById('gf-from').value='';
+  document.getElementById('gf-to').value='';
+  document.getElementById('gf-clear').style.display='none';
+  renderAll();
 }
 
 // ── SEARCH ────────────────────────────────────────────────────────────────────
@@ -536,6 +579,13 @@ function renderAll(){
   } else {
     if(msState.proj.size)iss=iss.filter(i=>msState.proj.has(pName(i.fields.project)));
     if(msState.user.size)iss=iss.filter(i=>i._userId&&msState.user.has(i._userId));
+    if(msState.status.size)iss=iss.filter(i=>msState.status.has(i.fields.status?.name));
+    if(filterFrom||filterTo)iss=iss.filter(i=>{
+      const d=new Date(i.fields.updated||i.fields.created);
+      if(filterFrom&&d<filterFrom)return false;
+      if(filterTo){const end=new Date(filterTo);end.setHours(23,59,59,999);if(d>end)return false;}
+      return true;
+    });
   }
   const encN=iss.filter(i=>sCat(i.fields.status?.name)==='enc').length;
   const porN=iss.filter(i=>sCat(i.fields.status?.name)==='por').length;
