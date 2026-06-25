@@ -447,8 +447,22 @@ function pName(p){if(!p)return'—';return(p.name||p.key||'').toUpperCase()}
 function pKey(p){if(!p)return'';return p.key||p.id||''}
 
 // ── HELPERS ────────────────────────────────────────────────────────────────────
-const ENC=new Set(['en curso','aprobado qa','in progress','doing','deploy dev','en modificación','en pruebas','en revision','en revisión','en modificacion']);
-const CLOSED=new Set(['finalizada','finalizado','done','cerrado','cerrada','closed','resuelto','resuelta','completado','completada','completo','completa','complete','completed','terminado','terminada','cancelado','cancelada','cancelled','canceled']);
+const ENC=new Set([
+  // Estados normalizados nuevos
+  'en curso','en pruebas','en corrección','en correccion','en análisis','en analisis','pendiente deploy',
+  // Legado / variantes anteriores
+  'aprobado qa','in progress','doing','deploy dev','en modificación','en modificacion',
+  'en revision','en revisión','sprint backlog','listo para el lanzamiento',
+  'verificar por el cliente','recibido en mesa'
+]);
+const CLOSED=new Set([
+  // Estados normalizados nuevos
+  'finalizado','cancelado',
+  // Legado / variantes anteriores
+  'finalizada','done','cerrado','cerrada','closed','resuelto','resuelta',
+  'completado','completada','completo','completa','complete','completed',
+  'terminado','terminada','cancelled','canceled','en pausa'
+]);
 function isDone(n){return CLOSED.has((n||'').toLowerCase().trim())}
 function sCat(n){const l=(n||'').toLowerCase().trim();if(CLOSED.has(l))return 'done';return ENC.has(l)?'enc':'por'}
 function respUser(fields){return fields.assignee||fields.reporter||null;}
