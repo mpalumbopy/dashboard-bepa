@@ -289,6 +289,11 @@ tr:hover td{background:var(--g50)}
     <select id="fI" onchange="renderAll()">
       <option value="3">3d</option><option value="5">5d</option><option value="7" selected>7d</option><option value="10">10d</option>
     </select>
+    <div id="sq-wrap" style="display:flex;align-items:center;gap:4px;border:1px solid var(--g300);border-radius:6px;padding:3px 8px;background:#fff;transition:border-color .15s" onfocusin="this.style.borderColor='var(--blue)'" onfocusout="this.style.borderColor='var(--g300)'">
+      <span style="font-size:13px;color:var(--g300)">🔍</span>
+      <input id="sq" type="text" placeholder="Buscar ticket…" value="" style="border:none;outline:none;font-size:12px;color:var(--g700);width:130px;background:transparent" oninput="setSearch(this.value)">
+      <span id="sq-clear" onclick="clearSearch()" style="display:none;cursor:pointer;color:var(--g300);font-size:13px;font-weight:700;line-height:1" title="Limpiar">✕</span>
+    </div>
   </div>
 </div>
 
@@ -352,6 +357,7 @@ let allIssues=[], cExec=null, cExecTime=null;
 let sortMode='tasks', activeTab='all', activePage='ejecutivo';
 let _lastUsers=[], _lastIss=[], _lastIdle=[], _lastEncN=0, _lastPorN=0, _lastThr=7;
 let doneFrom=null, doneTo=null;
+let searchQ='';
 const msState={proj:new Set(),user:new Set()};
 const msItems={proj:[],user:[]};
 let _userIdMap={};
@@ -508,12 +514,26 @@ function goToUser(uid){
   },80);
 }
 
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+function setSearch(v){
+  searchQ=v.trim();
+  document.getElementById('sq-clear').style.display=searchQ?'':'none';
+  if(searchQ){setPage('detalle');}
+  renderAll();
+}
+function clearSearch(){searchQ='';document.getElementById('sq').value='';document.getElementById('sq-clear').style.display='none';renderAll();}
+
 // ── RENDER ALL ─────────────────────────────────────────────────────────────────
 function renderAll(){
   const thr=parseInt(document.getElementById('fI').value)||7;
   let iss=allIssues;
-  if(msState.proj.size)iss=iss.filter(i=>msState.proj.has(pName(i.fields.project)));
-  if(msState.user.size)iss=iss.filter(i=>i._userId&&msState.user.has(i._userId));
+  if(searchQ){
+    const q=searchQ.toLowerCase();
+    iss=allIssues.filter(i=>(i.key||'').toLowerCase().includes(q)||(i.fields.summary||'').toLowerCase().includes(q));
+  } else {
+    if(msState.proj.size)iss=iss.filter(i=>msState.proj.has(pName(i.fields.project)));
+    if(msState.user.size)iss=iss.filter(i=>i._userId&&msState.user.has(i._userId));
+  }
   const encN=iss.filter(i=>sCat(i.fields.status?.name)==='enc').length;
   const porN=iss.filter(i=>sCat(i.fields.status?.name)==='por').length;
   const idle=iss.filter(i=>{const d=dAgo(i.fields.updated);return d!==null&&d>=thr&&sCat(i.fields.status?.name)==='por'&&!isDone(i.fields.status?.name)});
@@ -546,7 +566,9 @@ function renderAll(){
   const doneN=iss.filter(i=>isDone(i.fields.status?.name)).length;
   const activeN=iss.length-doneN;
   let issDetail=iss.filter(i=>!isDone(i.fields.status?.name));
-  if(activeTab==='enc')issDetail=issDetail.filter(i=>sCat(i.fields.status?.name)==='enc');
+  if(searchQ){
+    issDetail=iss; // búsqueda muestra todos los estados
+  } else if(activeTab==='enc')issDetail=issDetail.filter(i=>sCat(i.fields.status?.name)==='enc');
   else if(activeTab==='por')issDetail=issDetail.filter(i=>sCat(i.fields.status?.name)==='por');
   else if(activeTab==='done'){
     issDetail=iss.filter(i=>isDone(i.fields.status?.name));
@@ -747,4 +769,3 @@ loadData();
 </script>
 </body>
 </html>
- 
