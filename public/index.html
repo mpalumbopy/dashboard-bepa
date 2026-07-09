@@ -240,6 +240,11 @@ tr:hover .tlink{color:var(--blue);text-decoration:underline}
     </div>
   </div>
   <div class="hdr-r">
+    <div style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.3);border-radius:7px;padding:4px 10px;transition:border-color .15s" onfocusin="this.style.borderColor='rgba(255,255,255,.8)'" onfocusout="this.style.borderColor='rgba(255,255,255,.3)'">
+      <span style="font-size:13px;opacity:.7">🔍</span>
+      <input id="dq" type="text" placeholder="Buscar en descripción…" style="border:none;outline:none;font-size:12px;color:#fff;background:transparent;width:170px;font-weight:500" oninput="setDescSearch(this.value)" autocomplete="off">
+      <span id="dq-clear" onclick="clearDescSearch()" style="display:none;cursor:pointer;color:rgba(255,255,255,.6);font-size:13px;font-weight:700" title="Limpiar">✕</span>
+    </div>
     <div class="lu" id="lu">—</div>
     <button class="btn" onclick="window.print()">🖨️</button>
     <button class="btn" id="btnR" onclick="loadData()"><span id="ri">↻</span> Actualizar</button>
@@ -375,7 +380,7 @@ tr:hover .tlink{color:var(--blue);text-decoration:underline}
 const BASE = "https://grupobepa.atlassian.net/browse/";
 const JQL  = "assignee is not EMPTY ORDER BY updated DESC";
 const FIELDS = ["summary","status","assignee","reporter","project","issuetype",
-                "timeoriginalestimate","timespent","timeestimate","created","updated","priority"];
+                "timeoriginalestimate","timespent","timeestimate","created","updated","priority","description"];
 const COLORS = ['#0052CC','#00875A','#6554C0','#FF5630','#FF8B00','#00B8D9',
                 '#36B37E','#FF7452','#253858','#97A0AF','#2684FF','#403294',
                 '#006644','#BF2600','#006278'];
@@ -387,7 +392,7 @@ let sortMode='tasks', activeTab='all', activePage='ejecutivo';
 let _lastUsers=[], _lastIss=[], _lastIdle=[], _lastEncN=0, _lastPorN=0, _lastThr=7;
 let doneFrom=null, doneTo=null;
 let filterFrom=null, filterTo=null;
-let searchQ='';
+let searchQ='', descQ='';
 const msState={proj:new Set(),user:new Set(),status:new Set()};
 const msItems={proj:[],user:[],status:[]};
 let _userIdMap={};
@@ -451,6 +456,19 @@ async function loadData(){
       i._userId = nk||'unknown';
       i._userName = normToName[nk]||nk||'unknown';
       i._isReporterOnly = !i.fields.assignee && !!i.fields.reporter;
+    });
+
+    // Extraer texto plano del campo description (Atlassian Document Format)
+    function adfText(node){
+      if(!node)return'';
+      if(typeof node==='string')return node;
+      let t='';
+      if(node.text)t+=node.text;
+      if(node.content)node.content.forEach(c=>{t+=' '+adfText(c);});
+      return t;
+    }
+    normed.forEach(i=>{
+      i._descText=(adfText(i.fields.description)||'').replace(/\s+/g,' ').trim();
     });
 
     allIssues = normed;
@@ -545,6 +563,28 @@ function goToUser(uid){
   },80);
 }
 
+// ── FUZZY DESC SEARCH ─────────────────────────────────────────────────────────
+function norm(s){return(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();}
+function fuzzyMatch(query,text){
+  const q=norm(query), t=norm(text);
+  if(!q)return true;
+  // Split query in terms — all terms must match (AND)
+  return q.split(/\s+/).every(term=>{
+    if(t.includes(term))return true; // exact substring
+    if(term.length<3)return t.includes(term);
+    // Fuzzy: chars of term appear in order in text (allows gaps)
+    let ti=0;
+    for(let i=0;i<t.length&&ti<term.length;i++){if(t[i]===term[ti])ti++;}
+    return ti===term.length;
+  });
+}
+function setDescSearch(v){
+  descQ=v.trim();
+  document.getElementById('dq-clear').style.display=descQ?'':'none';
+  renderAll();
+}
+function clearDescSearch(){descQ='';document.getElementById('dq').value='';document.getElementById('dq-clear').style.display='none';renderAll();}
+
 // ── GLOBAL DATE FILTER ────────────────────────────────────────────────────────
 function setGlobalFilter(from,to){
   filterFrom=from?new Date(from+'T00:00:00'):null;
@@ -586,6 +626,10 @@ function renderAll(){
       if(filterTo){const end=new Date(filterTo);end.setHours(23,59,59,999);if(d>end)return false;}
       return true;
     });
+  }
+  // Fuzzy desc search — siempre combinable (AND con cualquier otro filtro activo)
+  if(descQ){
+    iss=iss.filter(i=>fuzzyMatch(descQ,(i._descText||'')+' '+(i.fields.summary||'')));
   }
   const encN=iss.filter(i=>sCat(i.fields.status?.name)==='enc').length;
   const porN=iss.filter(i=>sCat(i.fields.status?.name)==='por').length;
