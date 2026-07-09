@@ -310,7 +310,7 @@ tr:hover .tlink{color:var(--blue);text-decoration:underline}
     <span class="fl">Descripción:</span>
     <div style="display:flex;align-items:center;gap:4px;border:1px solid var(--g300);border-radius:6px;padding:3px 8px;background:#fff;transition:border-color .15s" onfocusin="this.style.borderColor='var(--blue)'" onfocusout="this.style.borderColor='var(--g300)'">
       <span style="font-size:12px;color:var(--g300)">🔍</span>
-      <input id="dq" type="text" placeholder="Buscar en descripción…" style="border:none;outline:none;font-size:12px;color:var(--g700);width:150px;background:transparent" oninput="setDescSearch(this.value)" autocomplete="off">
+      <input id="dq" type="text" placeholder="Buscar en tarea…" style="border:none;outline:none;font-size:12px;color:var(--g700);width:150px;background:transparent" oninput="setDescSearch(this.value)" autocomplete="off">
       <span id="dq-clear" onclick="clearDescSearch()" style="display:none;cursor:pointer;color:var(--g300);font-size:13px;font-weight:700;line-height:1" title="Limpiar">✕</span>
     </div>
     <span class="fl">Fecha:</span>
@@ -628,9 +628,10 @@ function renderAll(){
       return true;
     });
   }
-  // Fuzzy desc search — siempre combinable (AND con cualquier otro filtro activo)
+  // Búsqueda de texto en columna Tarea (substring, case-insensitive)
   if(descQ){
-    iss=iss.filter(i=>fuzzyMatch(descQ,(i._descText||'')+' '+(i.fields.summary||'')));
+    const dqL=descQ.toLowerCase();
+    iss=iss.filter(i=>(i.fields.summary||'').toLowerCase().includes(dqL));
   }
   const encN=iss.filter(i=>sCat(i.fields.status?.name)==='enc').length;
   const porN=iss.filter(i=>sCat(i.fields.status?.name)==='por').length;
