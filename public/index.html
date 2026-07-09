@@ -582,6 +582,7 @@ function fuzzyMatch(query,text){
 function setDescSearch(v){
   descQ=v.trim();
   document.getElementById('dq-clear').style.display=descQ?'':'none';
+  if(descQ&&activePage!=='detalle')setPage('detalle');
   renderAll();
 }
 function clearDescSearch(){descQ='';document.getElementById('dq').value='';document.getElementById('dq-clear').style.display='none';renderAll();}
@@ -628,10 +629,16 @@ function renderAll(){
       return true;
     });
   }
-  // Búsqueda de texto en columna Tarea (substring, case-insensitive)
+  // Búsqueda en columna Tarea: exactas primero (score 2), luego letras en orden (score 1)
   if(descQ){
     const dqL=descQ.toLowerCase();
-    iss=iss.filter(i=>(i.fields.summary||'').toLowerCase().includes(dqL));
+    iss=iss.map(i=>{
+      const s=(i.fields.summary||'').toLowerCase();
+      let sc=0;
+      if(s.includes(dqL)){sc=2;}
+      else{let qi=0;for(let ci=0;ci<s.length&&qi<dqL.length;ci++){if(s[ci]===dqL[qi])qi++;}if(qi===dqL.length)sc=1;}
+      i._score=sc;return i;
+    }).filter(i=>i._score>0).sort((a,b)=>b._score-a._score);
   }
   const encN=iss.filter(i=>sCat(i.fields.status?.name)==='enc').length;
   const porN=iss.filter(i=>sCat(i.fields.status?.name)==='por').length;
@@ -665,7 +672,7 @@ function renderAll(){
   const doneN=iss.filter(i=>isDone(i.fields.status?.name)).length;
   const activeN=iss.length-doneN;
   let issDetail=iss.filter(i=>!isDone(i.fields.status?.name));
-  if(searchQ){
+  if(searchQ||descQ){
     issDetail=iss; // búsqueda muestra todos los estados
   } else if(activeTab==='enc')issDetail=issDetail.filter(i=>sCat(i.fields.status?.name)==='enc');
   else if(activeTab==='por')issDetail=issDetail.filter(i=>sCat(i.fields.status?.name)==='por');
@@ -681,7 +688,14 @@ function renderAll(){
     }
   }
   const byUd={};issDetail.forEach(i=>{const k=i._userId;if(!k)return;if(!byUd[k])byUd[k]={name:i._userName||k,id:k,tasks:[]};byUd[k].tasks.push(i);});
-  const usersDetail=Object.values(byUd).sort((a,b)=>b.tasks.length-a.tasks.length);
+  const usersDetail=Object.values(byUd).sort((a,b)=>{
+    if(descQ){
+      const aS=Math.max(0,...a.tasks.map(t=>t._score||0));
+      const bS=Math.max(0,...b.tasks.map(t=>t._score||0));
+      if(bS!==aS)return bS-aS;
+    }
+    return b.tasks.length-a.tasks.length;
+  });
   renderIdle(idle);renderTabs(encN,porN,activeN,doneN);
   document.getElementById('uc').textContent='('+usersDetail.length+' usuarios)';
   renderUsers(usersDetail,thr);
