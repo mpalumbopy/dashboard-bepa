@@ -6,7 +6,7 @@
 <title>Dashboard Jira · grupobepa</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
-:root{color-scheme:light;--blue:#0052CC;--blue-l:#E6F0FF;--green:#00875A;--green-l:#E3FCEF;--orange:#FF8B00;--orange-l:#FFF7D6;--red:#DE350B;--red-l:#FFEBE6;--purple:#6554C0;--g50:#F4F5F7;--g100:#EBECF0;--g300:#C1C7D0;--g500:#5E6C84;--g700:#344563;--g900:#172B4D;--r:10px;--sh:0 1px 4px rgba(9,30,66,.1),0 0 1px rgba(9,30,66,.08)}
+:root{color-scheme:light;--blue:#0052CC;--blue-l:#E6F0FF;--green:#00875A;--green-l:#E3FCEF;--orange:#FF8B00;--orange-l:#FFF7D6;--red:#DE350B;--red-l:#FFEBE6;--purple:#6554C0;--pause:#6B778C;--pause-l:#EFF0F3;--g50:#F4F5F7;--g100:#EBECF0;--g300:#C1C7D0;--g500:#5E6C84;--g700:#344563;--g900:#172B4D;--r:10px;--sh:0 1px 4px rgba(9,30,66,.1),0 0 1px rgba(9,30,66,.08)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--g50);color:var(--g900);font-size:14px}
 
@@ -149,6 +149,7 @@ main{padding:16px 22px;max-width:1500px;margin:0 auto}
 .tab.t-por{border-color:var(--orange);color:var(--orange);background:var(--orange-l)}.tab.t-por.on,.tab.t-por:hover{background:var(--orange);color:#fff}
 .tab.t-all.on,.tab.t-all:hover{background:var(--g700);color:#fff;border-color:var(--g700)}
 .tab.t-done{border-color:var(--green);color:var(--green);background:var(--green-l)}.tab.t-done.on,.tab.t-done:hover{background:var(--green);color:#fff}
+.tab.t-pau{border-color:var(--pause);color:var(--pause);background:var(--pause-l)}.tab.t-pau.on,.tab.t-pau:hover{background:var(--pause);color:#fff}
 .tc{font-size:10px;background:rgba(0,0,0,.1);border-radius:8px;padding:1px 5px;margin-left:3px}
 .sec-h-d{font-size:13px;font-weight:700;color:var(--g700);margin-bottom:9px;display:flex;align-items:center;gap:8px}
 .sec-h-d small{font-size:11px;font-weight:400;color:var(--g500)}
@@ -178,7 +179,7 @@ tr:hover .tlink{color:var(--blue);text-decoration:underline}
 .badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700;text-transform:uppercase;white-space:nowrap}
 .b-enc{background:#DEEBFF;color:#0052CC}.b-qa{background:#EAE6FF;color:#403294}.b-por{background:#FFF7D6;color:#974F0C}.b-rec{background:#FFEBE6;color:#BF2600}.b-gray{background:#EBECF0;color:#344563}
 .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:3px;flex-shrink:0}
-.d-e{background:var(--blue)}.d-p{background:var(--orange)}
+.d-e{background:var(--blue)}.d-p{background:var(--orange)}.d-pau{background:var(--pause)}
 .prio-d{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:3px}
 .p-hi{background:#DE350B}.p-med{background:#FF8B00}.p-lo{background:#2684FF}.p-x{background:#C1C7D0}
 .idle-tag{background:var(--orange-l);color:var(--orange);border:1px solid #FFD166;border-radius:4px;padding:1px 5px;font-size:9px;font-weight:700;margin-left:3px}
@@ -518,10 +519,13 @@ const CLOSED=new Set([
   // Legado / variantes anteriores
   'finalizada','done','cerrado','cerrada','closed','resuelto','resuelta',
   'completado','completada','completo','completa','complete','completed',
-  'terminado','terminada','cancelled','canceled','en pausa'
+  'terminado','terminada','cancelled','canceled'
+]);
+const PAUSED=new Set([
+  'en pausa','paused','pause','on hold','suspendido','suspendida','bloqueado','bloqueada','blocked'
 ]);
 function isDone(n){return CLOSED.has((n||'').toLowerCase().trim())}
-function sCat(n){const l=(n||'').toLowerCase().trim();if(CLOSED.has(l))return 'done';return ENC.has(l)?'enc':'por'}
+function sCat(n){const l=(n||'').toLowerCase().trim();if(CLOSED.has(l))return 'done';if(PAUSED.has(l))return 'pau';return ENC.has(l)?'enc':'por'}
 function respUser(fields){return fields.assignee||fields.reporter||null;}
 function fmtS(s){if(!s||s===0)return null;const h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h?m?h+'h '+m+'m':h+'h':m+'m'}
 function dAgo(d){if(!d)return null;return Math.floor((Date.now()-new Date(d).getTime())/86400000)}
@@ -642,6 +646,7 @@ function renderAll(){
   }
   const encN=iss.filter(i=>sCat(i.fields.status?.name)==='enc').length;
   const porN=iss.filter(i=>sCat(i.fields.status?.name)==='por').length;
+  const pausN=iss.filter(i=>sCat(i.fields.status?.name)==='pau').length;
   const idle=iss.filter(i=>{const d=dAgo(i.fields.updated);return d!==null&&d>=thr&&sCat(i.fields.status?.name)==='por'&&!isDone(i.fields.status?.name)});
   const byU={};
   iss.forEach(i=>{const k=i._userId;if(!k)return;if(!byU[k])byU[k]={name:i._userName||k,id:k,tasks:[],projs:new Set()};byU[k].tasks.push(i);byU[k].projs.add(pName(i.fields.project));});
@@ -676,6 +681,7 @@ function renderAll(){
     issDetail=iss; // búsqueda muestra todos los estados
   } else if(activeTab==='enc')issDetail=issDetail.filter(i=>sCat(i.fields.status?.name)==='enc');
   else if(activeTab==='por')issDetail=issDetail.filter(i=>sCat(i.fields.status?.name)==='por');
+  else if(activeTab==='pau')issDetail=iss.filter(i=>sCat(i.fields.status?.name)==='pau');
   else if(activeTab==='done'){
     issDetail=iss.filter(i=>isDone(i.fields.status?.name));
     if(doneFrom||doneTo){
@@ -696,7 +702,7 @@ function renderAll(){
     }
     return b.tasks.length-a.tasks.length;
   });
-  renderIdle(idle);renderTabs(encN,porN,activeN,doneN);
+  renderIdle(idle);renderTabs(encN,porN,activeN,doneN,pausN);
   document.getElementById('uc').textContent='('+usersDetail.length+' usuarios)';
   renderUsers(usersDetail,thr);
   if(activePage==='direccion')renderDireccion(_lastUsers,iss,idle,encN,porN,thr);
@@ -771,7 +777,7 @@ function renderCards(users,thr){
 
 // ── IDLE BOX ───────────────────────────────────────────────────────────────────
 function renderIdle(idle){const b=document.getElementById('ib');if(!idle.length){b.style.display='none';return;}b.style.display='';document.getElementById('ic').innerHTML=idle.map(i=>`<span class="idle-chip">⏸ ${i.key} · ${aName(respUser(i.fields))?.split(' ')[0]||'?'} · ${dAgo(i.fields.updated)}d</span>`).join('');}
-function renderTabs(e,p,a,dn){
+function renderTabs(e,p,a,dn,pausN=0){
   const df=doneFrom?doneFrom.toISOString().slice(0,10):'';
   const dt=doneTo?doneTo.toISOString().slice(0,10):'';
   const datePicker=activeTab==='done'?`
@@ -784,7 +790,7 @@ function renderTabs(e,p,a,dn){
       ${(doneFrom||doneTo)?`<span onclick="clearDoneFilter()" style="cursor:pointer;color:var(--red);font-size:11px;margin-left:2px;font-weight:700" title="Limpiar filtro">✕</span>`:''}
     </span>`:''
   ;
-  document.getElementById('tabs').innerHTML=`<span class="tab t-all ${activeTab==='all'?'on':''}" onclick="setTab('all')">Activas<span class="tc">${a}</span></span><span class="tab t-enc ${activeTab==='enc'?'on':''}" onclick="setTab('enc')">● En Curso<span class="tc">${e}</span></span><span class="tab t-por ${activeTab==='por'?'on':''}" onclick="setTab('por')">● Por Hacer<span class="tc">${p}</span></span><span class="tab t-done ${activeTab==='done'?'on':''}" onclick="setTab('done')">✅ Finalizadas<span class="tc">${dn||0}</span></span>${datePicker}`;
+  document.getElementById('tabs').innerHTML=`<span class="tab t-all ${activeTab==='all'?'on':''}" onclick="setTab('all')">Activas<span class="tc">${a}</span></span><span class="tab t-enc ${activeTab==='enc'?'on':''}" onclick="setTab('enc')">● En Curso<span class="tc">${e}</span></span><span class="tab t-por ${activeTab==='por'?'on':''}" onclick="setTab('por')">● Por Hacer<span class="tc">${p}</span></span>${pausN?`<span class="tab t-pau ${activeTab==='pau'?'on':''}" onclick="setTab('pau')">⏸ En Pausa<span class="tc">${pausN}</span></span>`:''}<span class="tab t-done ${activeTab==='done'?'on':''}" onclick="setTab('done')">✅ Finalizadas<span class="tc">${dn||0}</span></span>${datePicker}`;
 }
 function setDoneFilter(from,to){
   doneFrom=from?new Date(from+'T00:00:00'):null;
@@ -799,8 +805,9 @@ function renderUsers(users,thr){
   if(!users.length){c.innerHTML='<div class="empty">Sin tareas para los filtros seleccionados.</div>';return;}
   users.forEach((u,i)=>{
     const col=COLORS[i%COLORS.length];
-    const eT=u.tasks.filter(t=>sCat(t.fields.status?.name)==='enc'&&!isDone(t.fields.status?.name));
-    const pT=u.tasks.filter(t=>sCat(t.fields.status?.name)==='por'&&!isDone(t.fields.status?.name));
+    const eT=u.tasks.filter(t=>sCat(t.fields.status?.name)==='enc');
+    const pT=u.tasks.filter(t=>sCat(t.fields.status?.name)==='por');
+    const puT=u.tasks.filter(t=>sCat(t.fields.status?.name)==='pau');
     const dT=u.tasks.filter(t=>isDone(t.fields.status?.name));
     const idC=u.tasks.filter(t=>{const d=dAgo(t.fields.updated);return d!==null&&d>=thr&&sCat(t.fields.status?.name)==='por'&&!isDone(t.fields.status?.name);}).length;
     const projs=[...new Set(u.tasks.map(t=>pName(t.fields.project)).filter(Boolean))].sort().join(', ');
@@ -811,8 +818,9 @@ function renderUsers(users,thr){
     let body='';
     if(eT.length)body+=`<div><div class="sec-tasks-h" style="background:var(--blue-l);color:var(--blue)"><span class="dot d-e"></span> En Curso · ${eT.length} tarea${eT.length!==1?'s':''}</div>${buildTable(eT,thr)}</div>`;
     if(pT.length)body+=`<div><div class="sec-tasks-h" style="background:var(--orange-l);color:var(--orange)"><span class="dot d-p"></span> Por Hacer · ${pT.length} tarea${pT.length!==1?'s':''}</div>${buildTable(pT,thr)}</div>`;
+    if(puT.length)body+=`<div><div class="sec-tasks-h" style="background:var(--pause-l);color:var(--pause)"><span class="dot d-pau"></span> En Pausa · ${puT.length} tarea${puT.length!==1?'s':''}</div>${buildTable(puT,thr)}</div>`;
     if(dT.length)body+=`<div><div class="sec-tasks-h" style="background:var(--green-l);color:var(--green)">✅ Finalizadas · ${dT.length} tarea${dT.length!==1?'s':''}</div>${buildTable(dT,thr)}</div>`;
-    d.innerHTML=`<div class="uh" onclick="toggleC(this)"><div class="av-sm" style="background:${col}">${ini(u.name)}</div><div class="ui"><div class="un">${u.name}</div><div class="um">📁 ${projs}</div></div><div class="ustats"><div class="us-stat enc"><div class="us-stat-v">${eT.length}</div><div class="us-stat-l">En Curso</div></div><div class="us-stat warn"><div class="us-stat-v">${pT.length}</div><div class="us-stat-l">Por Hacer</div></div><div class="us-stat ${idC?'danger':''}"><div class="us-stat-v">${idC}</div><div class="us-stat-l">Sin actividad</div></div>${dT.length?`<div class="us-stat ok"><div class="us-stat-v">${dT.length}</div><div class="us-stat-l">✅ Finalizadas</div></div>`:''}<div class="us-stat"><div class="us-stat-v">${fmtS(tE)||'—'}</div><div class="us-stat-l">Estim.</div></div><div class="us-stat"><div class="us-stat-v">${fmtS(tS)||'—'}</div><div class="us-stat-l">Usado</div></div><div class="us-stat"><div class="us-stat-v">${fmtS(tR)||'—'}</div><div class="us-stat-l">Resta</div></div></div><div class="chev open">▶</div></div><div class="ub">${body}</div>`;
+    d.innerHTML=`<div class="uh" onclick="toggleC(this)"><div class="av-sm" style="background:${col}">${ini(u.name)}</div><div class="ui"><div class="un">${u.name}</div><div class="um">📁 ${projs}</div></div><div class="ustats"><div class="us-stat enc"><div class="us-stat-v">${eT.length}</div><div class="us-stat-l">En Curso</div></div><div class="us-stat warn"><div class="us-stat-v">${pT.length}</div><div class="us-stat-l">Por Hacer</div></div><div class="us-stat ${idC?'danger':''}"><div class="us-stat-v">${idC}</div><div class="us-stat-l">Sin actividad</div></div>${puT.length?`<div class="us-stat"><div class="us-stat-v" style="color:var(--pause)">${puT.length}</div><div class="us-stat-l">⏸ En Pausa</div></div>`:''}${dT.length?`<div class="us-stat ok"><div class="us-stat-v">${dT.length}</div><div class="us-stat-l">✅ Finalizadas</div></div>`:''}<div class="us-stat"><div class="us-stat-v">${fmtS(tE)||'—'}</div><div class="us-stat-l">Estim.</div></div><div class="us-stat"><div class="us-stat-v">${fmtS(tS)||'—'}</div><div class="us-stat-l">Usado</div></div><div class="us-stat"><div class="us-stat-v">${fmtS(tR)||'—'}</div><div class="us-stat-l">Resta</div></div></div><div class="chev open">▶</div></div><div class="ub">${body}</div>`;
     c.appendChild(d);
   });
 }
