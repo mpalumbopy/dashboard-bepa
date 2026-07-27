@@ -110,6 +110,9 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 /* loading pulse */
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 .loading .card-num{animation:pulse .9s ease infinite;color:var(--dim)!important}
+/* number changed flash */
+@keyframes num-changed{0%{transform:scale(1)}30%{transform:scale(1.18)}100%{transform:scale(1)}}
+.num-changed{animation:num-changed .45s ease!important;color:#fff!important}
 </style>
 </head>
 <body>
@@ -117,12 +120,14 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 <!-- HEADER -->
 <div class="hdr">
   <div>
-    <div class="hdr-title"><span class="dot-live"></span>Panel de Tickets · BEPA</div>
+    <div class="hdr-title"><span class="dot-live"></span>Panel de Tickets · BEPA
+      <span id="flash" style="font-size:.9rem;font-weight:500;color:var(--gr);margin-left:12px;opacity:0;transition:opacity .4s">⚡ Actualizado</span>
+    </div>
     <div class="hdr-sub" id="last-upd">Cargando datos...</div>
   </div>
   <div class="hdr-right">
-    <div class="hdr-refresh">Próxima actualización en</div>
-    <div class="countdown" id="countdown">3:00</div>
+    <div class="hdr-refresh" id="check-status" style="margin-bottom:4px;font-size:.8rem">● en vivo</div>
+    <div style="font-size:.78rem;color:var(--muted)">próx. verificación <span class="countdown" id="countdown" style="color:var(--text);font-size:.9rem;font-weight:700">20s</span></div>
   </div>
 </div>
 
@@ -190,9 +195,10 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────
-const PROXY = 'https://main.dashboard-bepa.pages.dev/api/jira';
-const BASE   = 'https://grupobepa.atlassian.net/browse/';
-const REFRESH_SEC = 180; // 3 min
+const PROXY          = 'https://main.dashboard-bepa.pages.dev/api/jira';
+const BASE           = 'https://grupobepa.atlassian.net/browse/';
+const CHECK_INTERVAL = 20;  // seg entre verificaciones de cambio
+const FORCE_REFRESH  = 300; // refresco forzado cada 5 min por si acaso
 
 const TEAMS = {
   soporte:    ['jaime','diana','jorge','marcos','leticia'],
@@ -289,9 +295,9 @@ async function fetchCount(jql){
 let activeIssues = [];   // all non-done issues
 let activeArea   = null; // 'sin-asignar'|'soporte'|'desarrollo'|'infra'
 let activeTab    = 'all';
-let countdownVal = REFRESH_SEC;
-let cdTimer      = null;
-let refreshTimer = null;
+let checkTimer   = null;
+let checkIn      = CHECK_INTERVAL;
+const prevCounts = {}; // para detectar cambios y animar
 
 // ─── DATA LOAD ────────────────────────────────────────────────────────────
 async function loadData(){
@@ -352,12 +358,21 @@ async function loadData(){
     // re-render open panel if any
     if(activeArea) renderPanel(activeArea, activeTab);
 
+    // flash update indicator
+    flashUpdate();
+
   }catch(e){
     console.error(e);
     document.getElementById('last-upd').textContent = 'Error al conectar con Jira — reintentando...';
   }
   setLoading(false);
-  resetCountdown();
+}
+
+function flashUpdate(){
+  const el = document.getElementById('flash');
+  if(!el) return;
+  el.style.opacity='1';
+  setTimeout(()=>el.style.opacity='0', 2500);
 }
 
 function setLoading(on){
@@ -367,24 +382,41 @@ function setLoading(on){
 }
 function setCount(id, n){
   const el=document.getElementById(id);
-  if(el){ el.textContent=n; el.classList.remove('loading'); }
+  if(!el) return;
+  const prev = prevCounts[id];
+  prevCounts[id] = n;
+  el.textContent = n;
+  el.classList.remove('loading');
+  // animar si el número cambió
+  if(prev !== undefined && prev !== n){
+    el.classList.remove('num-changed');
+    void el.offsetWidth; // reflow para reiniciar animación
+    el.classList.add('num-changed');
+    setTimeout(()=>el.classList.remove('num-changed'), 600);
+  }
 }
 
-// ─── COUNTDOWN ────────────────────────────────────────────────────────────
-function resetCountdown(){
-  clearInterval(cdTimer);
-  countdownVal = REFRESH_SEC;
-  tickCountdown();
-  cdTimer = setInterval(()=>{
-    countdownVal--;
-    if(countdownVal<=0){ clearInterval(cdTimer); loadData(); }
-    else tickCountdown();
-  },1000);
-}
-function tickCountdown(){
-  const m=Math.floor(countdownVal/60);
-  const s=String(countdownVal%60).padStart(2,'0');
-  document.getElementById('countdown').textContent=`${m}:${s}`;
+// ─── POLLING ──────────────────────────────────────────────────────────────
+function startPolling(){
+  clearInterval(checkTimer);
+  checkIn = CHECK_INTERVAL;
+
+  // tick cada segundo: baja el contador, al llegar a 0 refresca todo
+  checkTimer = setInterval(()=>{
+    checkIn--;
+    const el = document.getElementById('countdown');
+    if(el) el.textContent = checkIn + 's';
+
+    if(checkIn <= 0){
+      checkIn = CHECK_INTERVAL;
+      document.getElementById('check-status').textContent = '🔄 actualizando...';
+      loadData().then(()=>{
+        document.getElementById('check-status').textContent = '● en vivo';
+      }).catch(()=>{
+        document.getElementById('check-status').textContent = '⚠ error — reintentando';
+      });
+    }
+  }, 1000);
 }
 
 // ─── PANEL ────────────────────────────────────────────────────────────────
@@ -488,7 +520,7 @@ function setTab(t){
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
-loadData();
+loadData().then(startPolling);
 </script>
 </body>
 </html>
