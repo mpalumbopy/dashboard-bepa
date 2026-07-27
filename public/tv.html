@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Tickets · BEPA</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0f1e;--card:#111827;--card2:#161d2e;--border:#1e2d47;
+  --text:#e2e8f4;--muted:#6b7fa0;--dim:#3a4a66;
+  --r:#ef4444;--r-l:rgba(239,68,68,.12);
+  --b:#3b82f6;--b-l:rgba(59,130,246,.12);
+  --p:#a855f7;--p-l:rgba(168,85,247,.12);
+  --g:#10b981;--g-l:rgba(16,185,129,.12);
+  --y:#f59e0b;--y-l:rgba(245,158,11,.12);
+  --o:#f97316;--o-l:rgba(249,115,22,.12);
+  --gr:#22c55e;--gr-l:rgba(34,197,94,.12);
+  --pau:#6b7fa0;--pau-l:rgba(107,127,160,.12);
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;min-height:100vh;padding:22px 28px;overflow-x:hidden}
+
+/* ── HEADER ── */
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}
+.hdr-title{font-size:1.9rem;font-weight:800;color:#fff;letter-spacing:-.5px}
+.hdr-sub{font-size:.88rem;color:var(--muted);margin-top:3px}
+.hdr-right{text-align:right}
+.hdr-refresh{font-size:.82rem;color:var(--muted)}
+.countdown{font-size:1.5rem;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.dot-live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gr);margin-right:6px;animation:blink 2s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── GRIDS ── */
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px}
+
+/* ── CARD ── */
+.card{
+  background:var(--card);border:2px solid var(--border);border-radius:16px;
+  padding:24px 22px 20px;position:relative;overflow:hidden;
+  transition:transform .18s,box-shadow .18s;
+}
+.card.clickable{cursor:pointer}
+.card.clickable:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.card.active-card{border-color:var(--accent)!important;box-shadow:0 0 0 3px rgba(255,255,255,.06)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent)}
+.card-icon{font-size:1.5rem;margin-bottom:10px;opacity:.9}
+.card-lbl{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:6px}
+.card-num{font-size:4.8rem;font-weight:900;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.card-sub{font-size:.8rem;color:var(--muted);margin-top:6px}
+.card-members{font-size:.72rem;color:var(--dim);margin-top:5px;line-height:1.4}
+.stat-card .card-num{font-size:3.8rem}
+
+/* accent classes */
+.acc-r{--accent:var(--r);background:linear-gradient(135deg,var(--card),rgba(239,68,68,.04))}
+.acc-b{--accent:var(--b);background:linear-gradient(135deg,var(--card),rgba(59,130,246,.04))}
+.acc-p{--accent:var(--p);background:linear-gradient(135deg,var(--card),rgba(168,85,247,.04))}
+.acc-g{--accent:var(--g);background:linear-gradient(135deg,var(--card),rgba(16,185,129,.04))}
+.acc-y{--accent:var(--y)}
+.acc-o{--accent:var(--o)}
+.acc-gr{--accent:var(--gr)}
+
+/* ── DETAIL PANEL ── */
+.panel{display:none;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:22px 24px;margin-bottom:8px}
+.panel.open{display:block}
+.panel-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.panel-title{font-size:1.3rem;font-weight:700}
+.panel-close{background:var(--border);border:none;color:var(--text);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600}
+.panel-close:hover{background:var(--dim)}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+.tab{
+  padding:5px 14px;border-radius:20px;border:1.5px solid var(--border);
+  background:transparent;color:var(--muted);cursor:pointer;
+  font-size:.82rem;font-weight:700;transition:all .12s;
+}
+.tab:hover{color:var(--text);border-color:var(--dim)}
+.tab.on{color:#fff}
+.tab.on.t-all{border-color:#fff;background:rgba(255,255,255,.08)}
+.tab.on.t-enc{border-color:var(--b);color:var(--b);background:var(--b-l)}
+.tab.on.t-por{border-color:var(--y);color:var(--y);background:var(--y-l)}
+.tab.on.t-pau{border-color:var(--pau);color:var(--pau);background:var(--pau-l)}
+.tab.on.t-done{border-color:var(--gr);color:var(--gr);background:var(--gr-l)}
+.tc{background:rgba(255,255,255,.1);border-radius:10px;padding:1px 6px;font-size:.73rem;margin-left:4px}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem}
+.tbl th{text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted);font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.tbl td{padding:9px 12px;border-bottom:1px solid rgba(30,45,74,.4);vertical-align:middle}
+.tbl tr:last-child td{border:none}
+.tbl tr:hover td{background:rgba(255,255,255,.018)}
+.tbl-key{font-family:'Courier New',monospace;font-size:.78rem;color:#5b8dee;white-space:nowrap}
+.tbl-key a{color:inherit;text-decoration:none}
+.tbl-key a:hover{text-decoration:underline}
+.tbl-sum{color:var(--text);max-width:440px}
+.tbl-who{color:var(--muted);white-space:nowrap;font-size:.8rem}
+.tbl-proj{color:var(--dim);white-space:nowrap;font-size:.78rem}
+.tbl-date{color:var(--dim);white-space:nowrap;font-size:.78rem}
+.badge{display:inline-block;padding:3px 9px;border-radius:10px;font-size:.73rem;font-weight:700;white-space:nowrap}
+.b-enc{background:var(--b-l);color:#60a5fa}
+.b-por{background:var(--y-l);color:#fbbf24}
+.b-pau{background:var(--pau-l);color:#94a3b8}
+.b-done{background:var(--gr-l);color:#4ade80}
+.empty{text-align:center;padding:36px;color:var(--muted);font-size:.9rem}
+
+/* ── FOOTER ── */
+.foot{text-align:center;color:var(--dim);font-size:.75rem;margin-top:16px}
+
+/* loading pulse */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.loading .card-num{animation:pulse .9s ease infinite;color:var(--dim)!important}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div>
+    <div class="hdr-title"><span class="dot-live"></span>Panel de Tickets · BEPA</div>
+    <div class="hdr-sub" id="last-upd">Cargando datos...</div>
+  </div>
+  <div class="hdr-right">
+    <div class="hdr-refresh">Próxima actualización en</div>
+    <div class="countdown" id="countdown">3:00</div>
+  </div>
+</div>
+
+<!-- ÁREA CARDS -->
+<div class="grid4" id="area-grid">
+  <div class="card clickable acc-r" id="card-sin" onclick="showArea('sin-asignar')">
+    <div class="card-icon">🔴</div>
+    <div class="card-lbl">Sin Asignar</div>
+    <div class="card-num" id="n-sin">—</div>
+    <div class="card-sub">tickets activos</div>
+  </div>
+  <div class="card clickable acc-b" id="card-sop" onclick="showArea('soporte')">
+    <div class="card-icon">🎧</div>
+    <div class="card-lbl">Soporte</div>
+    <div class="card-num" id="n-sop">—</div>
+    <div class="card-sub">tickets activos</div>
+    <div class="card-members">Jaime · Diana · Jorge · Marcos · Leticia</div>
+  </div>
+  <div class="card clickable acc-p" id="card-dev" onclick="showArea('desarrollo')">
+    <div class="card-icon">💻</div>
+    <div class="card-lbl">Desarrollo</div>
+    <div class="card-num" id="n-dev">—</div>
+    <div class="card-sub">tickets activos</div>
+    <div class="card-members">Kevin · Daril · Rodrigo · Aldo · Elias · Gustavo · Danays · Blanca</div>
+  </div>
+  <div class="card clickable acc-g" id="card-inf" onclick="showArea('infra')">
+    <div class="card-icon">🖥️</div>
+    <div class="card-lbl">Infraestructura</div>
+    <div class="card-num" id="n-inf">—</div>
+    <div class="card-sub">tickets activos</div>
+    <div class="card-members">Richard · Fabian</div>
+  </div>
+</div>
+
+<!-- STAT CARDS -->
+<div class="grid3">
+  <div class="card stat-card acc-y">
+    <div class="card-icon">📅</div>
+    <div class="card-lbl">Ingresados Hoy</div>
+    <div class="card-num" id="n-hoy">—</div>
+  </div>
+  <div class="card stat-card acc-o">
+    <div class="card-icon">📆</div>
+    <div class="card-lbl">Ingresados en el Mes</div>
+    <div class="card-num" id="n-mes">—</div>
+  </div>
+  <div class="card stat-card acc-gr">
+    <div class="card-icon">✅</div>
+    <div class="card-lbl">Finalizados en el Mes</div>
+    <div class="card-num" id="n-fin">—</div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="panel" id="panel">
+  <div class="panel-hdr">
+    <div class="panel-title" id="panel-title">Tickets</div>
+    <button class="panel-close" onclick="closePanel()">✕ Cerrar</button>
+  </div>
+  <div class="tabs" id="panel-tabs"></div>
+  <div id="panel-body"></div>
+</div>
+
+<div class="foot" id="foot"></div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────
+const PROXY = 'https://main.dashboard-bepa.pages.dev/api/jira';
+const BASE   = 'https://grupobepa.atlassian.net/browse/';
+const REFRESH_SEC = 180; // 3 min
+
+const TEAMS = {
+  soporte:    ['jaime','diana','jorge','marcos','leticia'],
+  desarrollo: ['kevin','daril','rodrigo','aldo','elias','gustavo','danays','blanca'],
+  infra:      ['richard','fabian']
+};
+
+const CLOSED = new Set([
+  'finalizado','finalizada','cancelado','cancelada','done','cerrado','cerrada',
+  'closed','resuelto','resuelta','completado','completada','completo','completa',
+  'complete','completed','terminado','terminada','cancelled','canceled',
+  'implementado','listo','lista'
+]);
+const PAUSED = new Set([
+  'en pausa','paused','pause','on hold','suspendido','suspendida',
+  'bloqueado','bloqueada','blocked'
+]);
+const ENC = new Set([
+  'en curso','in progress','in_progress','en progreso','en proceso','en desarrollo',
+  'doing','activo','activa','active','en revisión','en revision','en testing',
+  'testing','in review','reviewing','en qa','qa','in qa','análisis','analisis',
+  'analysis','planificado','planificada','planned','sprint activo','sprint activa'
+]);
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────
+function isDone(n){ return CLOSED.has((n||'').toLowerCase().trim()) }
+function sCat(n){
+  const l=(n||'').toLowerCase().trim();
+  if(CLOSED.has(l))return 'done';
+  if(PAUSED.has(l))return 'pau';
+  return ENC.has(l)?'enc':'por';
+}
+function getTeam(displayName){
+  if(!displayName) return 'sin-asignar';
+  const l = displayName.toLowerCase().trim();
+  for(const [team,names] of Object.entries(TEAMS)){
+    if(names.some(n=>l.startsWith(n))) return team;
+  }
+  return 'otro';
+}
+function dateStr(d){ return d.toISOString().slice(0,10) }
+function dAgo(iso){
+  if(!iso) return null;
+  return Math.floor((Date.now()-new Date(iso).getTime())/86400000);
+}
+function fmtAgo(iso){
+  const d=dAgo(iso);
+  if(d===null)return '—';
+  if(d===0)return 'hoy';
+  if(d===1)return 'ayer';
+  return `hace ${d}d`;
+}
+
+// ─── API ──────────────────────────────────────────────────────────────────
+const FIELDS = ['summary','status','assignee','project','issuetype','created','updated','priority'];
+
+async function callProxy(jql, maxResults=200, nextPageToken=null){
+  const body={jql,fields:FIELDS,maxResults};
+  if(nextPageToken) body.nextPageToken=nextPageToken;
+  const r=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+async function fetchAll(jql){
+  let issues=[], token=null;
+  do{
+    const d = await callProxy(jql, 200, token);
+    issues = issues.concat(d.issues||[]);
+    token = d.nextPageToken||null;
+    // safety: max 1000 issues
+    if(issues.length>=1000) break;
+  }while(token);
+  return issues;
+}
+
+async function fetchCount(jql){
+  // fetch with maxResults=1 and use total; fallback: count returned issues
+  const d = await callProxy(jql, 200);
+  // if total available use it, else count
+  if(typeof d.total==='number') return d.total;
+  // otherwise fetch all and count
+  let issues = d.issues||[];
+  let token = d.nextPageToken||null;
+  while(token && issues.length<2000){
+    const d2=await callProxy(jql,200,token);
+    issues=issues.concat(d2.issues||[]);
+    token=d2.nextPageToken||null;
+  }
+  return issues.length;
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────
+let activeIssues = [];   // all non-done issues
+let activeArea   = null; // 'sin-asignar'|'soporte'|'desarrollo'|'infra'
+let activeTab    = 'all';
+let countdownVal = REFRESH_SEC;
+let cdTimer      = null;
+let refreshTimer = null;
+
+// ─── DATA LOAD ────────────────────────────────────────────────────────────
+async function loadData(){
+  setLoading(true);
+  try{
+    const today      = new Date();
+    const todayStr   = dateStr(today);
+    const monthStart = dateStr(new Date(today.getFullYear(),today.getMonth(),1));
+
+    // 1. All active issues (no done)
+    const actJQL = `statusCategory != Done ORDER BY updated DESC`;
+
+    // 2. Created this month (includes today)
+    const mesJQL = `created >= "${monthStart}" ORDER BY created DESC`;
+
+    // 3. Finalized this month
+    const finJQL = `statusCategory = Done AND updated >= "${monthStart}" ORDER BY updated DESC`;
+
+    const [active, mesIssues, finIssues] = await Promise.all([
+      fetchAll(actJQL),
+      fetchAll(mesJQL),
+      fetchAll(finJQL)
+    ]);
+
+    activeIssues = active;
+
+    // counts by area
+    let nSin=0, nSop=0, nDev=0, nInf=0;
+    for(const i of active){
+      const name = i.fields?.assignee?.displayName || null;
+      const team = getTeam(name);
+      if(team==='sin-asignar') nSin++;
+      else if(team==='soporte') nSop++;
+      else if(team==='desarrollo') nDev++;
+      else if(team==='infra') nInf++;
+    }
+
+    // stat counts
+    const nMes = mesIssues.length;
+    const nHoy = mesIssues.filter(i=>(i.fields?.created||'').startsWith(todayStr)).length;
+    // finalized: unique count (some might appear in both active and fin queries edge case)
+    // use only the finalized query result
+    const nFin = finIssues.length;
+
+    // update UI
+    setCount('n-sin', nSin);
+    setCount('n-sop', nSop);
+    setCount('n-dev', nDev);
+    setCount('n-inf', nInf);
+    setCount('n-hoy', nHoy);
+    setCount('n-mes', nMes);
+    setCount('n-fin', nFin);
+
+    const now = new Date().toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('last-upd').textContent = `Última actualización: ${now}  ·  ${active.length} tickets activos`;
+    document.getElementById('foot').textContent = `grupobepa.atlassian.net  ·  Total activos: ${active.length}  ·  Actualizado: ${now}`;
+
+    // re-render open panel if any
+    if(activeArea) renderPanel(activeArea, activeTab);
+
+  }catch(e){
+    console.error(e);
+    document.getElementById('last-upd').textContent = 'Error al conectar con Jira — reintentando...';
+  }
+  setLoading(false);
+  resetCountdown();
+}
+
+function setLoading(on){
+  document.querySelectorAll('.card-num').forEach(el=>{
+    on ? el.classList.add('loading') : el.classList.remove('loading');
+  });
+}
+function setCount(id, n){
+  const el=document.getElementById(id);
+  if(el){ el.textContent=n; el.classList.remove('loading'); }
+}
+
+// ─── COUNTDOWN ────────────────────────────────────────────────────────────
+function resetCountdown(){
+  clearInterval(cdTimer);
+  countdownVal = REFRESH_SEC;
+  tickCountdown();
+  cdTimer = setInterval(()=>{
+    countdownVal--;
+    if(countdownVal<=0){ clearInterval(cdTimer); loadData(); }
+    else tickCountdown();
+  },1000);
+}
+function tickCountdown(){
+  const m=Math.floor(countdownVal/60);
+  const s=String(countdownVal%60).padStart(2,'0');
+  document.getElementById('countdown').textContent=`${m}:${s}`;
+}
+
+// ─── PANEL ────────────────────────────────────────────────────────────────
+const AREA_META = {
+  'sin-asignar':{ label:'Sin Asignar',  accent:'#ef4444', id:'card-sin' },
+  soporte:       { label:'Soporte',      accent:'#3b82f6', id:'card-sop' },
+  desarrollo:    { label:'Desarrollo',   accent:'#a855f7', id:'card-dev' },
+  infra:         { label:'Infraestructura', accent:'#10b981', id:'card-inf' },
+};
+
+function showArea(area){
+  if(activeArea===area){ closePanel(); return; }
+  // remove active from all cards
+  document.querySelectorAll('.card.clickable').forEach(c=>c.classList.remove('active-card'));
+  const meta=AREA_META[area];
+  if(meta) document.getElementById(meta.id)?.classList.add('active-card');
+  activeArea=area;
+  activeTab='all';
+  renderPanel(area,'all');
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('panel').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function closePanel(){
+  activeArea=null;
+  document.getElementById('panel').classList.remove('open');
+  document.querySelectorAll('.card.clickable').forEach(c=>c.classList.remove('active-card'));
+}
+
+function filterByArea(area){
+  return activeIssues.filter(i=>{
+    const name=i.fields?.assignee?.displayName||null;
+    return getTeam(name)===area;
+  });
+}
+
+function renderPanel(area, tab){
+  const meta=AREA_META[area];
+  if(!meta) return;
+  document.getElementById('panel-title').textContent=meta.label+' — Tickets Activos';
+  document.getElementById('panel-title').style.color=meta.accent;
+
+  const issues=filterByArea(area);
+
+  // count by cat
+  const cats={enc:0,por:0,pau:0,done:0};
+  for(const i of issues) cats[sCat(i.fields?.status?.name)]++;
+
+  // tabs
+  const tabs=[
+    {id:'all', cls:'t-all', lbl:'Todos', n:issues.length},
+    {id:'enc', cls:'t-enc', lbl:'● En Curso', n:cats.enc},
+    {id:'por', cls:'t-por', lbl:'● Por Hacer', n:cats.por},
+    ...(cats.pau?[{id:'pau',cls:'t-pau',lbl:'⏸ En Pausa',n:cats.pau}]:[]),
+    ...(cats.done?[{id:'done',cls:'t-done',lbl:'✅ Finalizadas',n:cats.done}]:[]),
+  ];
+  document.getElementById('panel-tabs').innerHTML=tabs.map(t=>
+    `<span class="tab ${t.cls}${tab===t.id?' on':''}" onclick="setTab('${t.id}')">${t.lbl}<span class="tc">${t.n}</span></span>`
+  ).join('');
+
+  // filter by tab
+  let shown = tab==='all' ? issues : issues.filter(i=>sCat(i.fields?.status?.name)===tab);
+
+  // render table
+  if(!shown.length){
+    document.getElementById('panel-body').innerHTML=`<div class="empty">No hay tickets en esta categoría</div>`;
+    return;
+  }
+  const rows=shown.map(i=>{
+    const f=i.fields;
+    const sn=f?.status?.name||'';
+    const cat=sCat(sn);
+    const badgeCls={enc:'b-enc',por:'b-por',pau:'b-pau',done:'b-done'}[cat]||'b-por';
+    const assignee=f?.assignee?.displayName||'<em style="color:var(--r)">Sin asignar</em>';
+    const proj=f?.project?.key||'—';
+    const upd=fmtAgo(f?.updated);
+    return `<tr>
+      <td class="tbl-key"><a href="${BASE}${i.key}" target="_blank">${i.key}</a></td>
+      <td class="tbl-sum">${esc(f?.summary||'—')}</td>
+      <td><span class="badge ${badgeCls}">${esc(sn)}</span></td>
+      <td class="tbl-who">${assignee}</td>
+      <td class="tbl-proj">${proj}</td>
+      <td class="tbl-date">${upd}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('panel-body').innerHTML=`
+    <table class="tbl">
+      <thead><tr>
+        <th>Ticket</th><th>Descripción</th><th>Estado</th>
+        <th>Asignado</th><th>Proyecto</th><th>Actualizado</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function setTab(t){
+  activeTab=t;
+  renderPanel(activeArea,t);
+}
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+// ─── INIT ─────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
