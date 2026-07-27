@@ -1,3 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Tickets · BEPA</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0f1e;--card:#111827;--card2:#161d2e;--border:#1e2d47;
+  --text:#e2e8f4;--muted:#6b7fa0;--dim:#3a4a66;
+  --r:#ef4444;--r-l:rgba(239,68,68,.12);
+  --b:#3b82f6;--b-l:rgba(59,130,246,.12);
+  --p:#a855f7;--p-l:rgba(168,85,247,.12);
+  --g:#10b981;--g-l:rgba(16,185,129,.12);
+  --y:#f59e0b;--y-l:rgba(245,158,11,.12);
+  --o:#f97316;--o-l:rgba(249,115,22,.12);
+  --gr:#22c55e;--gr-l:rgba(34,197,94,.12);
+  --pau:#6b7fa0;--pau-l:rgba(107,127,160,.12);
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;min-height:100vh;padding:22px 28px;overflow-x:hidden}
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}
+.hdr-title{font-size:1.9rem;font-weight:800;color:#fff;letter-spacing:-.5px}
+.hdr-sub{font-size:.88rem;color:var(--muted);margin-top:3px}
+.hdr-right{text-align:right}
+.dot-live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gr);margin-right:6px;animation:blink 2s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:20px}
+.card{background:var(--card);border:2px solid var(--border);border-radius:16px;padding:24px 22px 20px;position:relative;overflow:hidden;transition:transform .18s,box-shadow .18s}
+.card.clickable{cursor:pointer}
+.card.clickable:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.card.active-card{border-color:var(--accent)!important;box-shadow:0 0 0 3px rgba(255,255,255,.06)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent)}
+.card-icon{font-size:1.5rem;margin-bottom:10px;opacity:.9}
+.card-lbl{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:6px}
+.card-num{font-size:4.8rem;font-weight:900;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.card-sub{font-size:.8rem;color:var(--muted);margin-top:6px}
+.card-members{font-size:.72rem;color:var(--dim);margin-top:5px;line-height:1.4}
+.stat-card .card-num{font-size:3.8rem}
+.acc-r{--accent:var(--r);background:linear-gradient(135deg,var(--card),rgba(239,68,68,.04))}
+.acc-b{--accent:var(--b);background:linear-gradient(135deg,var(--card),rgba(59,130,246,.04))}
+.acc-p{--accent:var(--p);background:linear-gradient(135deg,var(--card),rgba(168,85,247,.04))}
+.acc-g{--accent:var(--g);background:linear-gradient(135deg,var(--card),rgba(16,185,129,.04))}
+.acc-y{--accent:var(--y)}.acc-o{--accent:var(--o)}.acc-gr{--accent:var(--gr)}
+/* Bull Queue Section */
+.bull-section{margin-bottom:20px}
+.section-title{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.8px;margin-bottom:12px;display:flex;align-items:center;gap:12px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.bull-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.bull-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px}
+.bull-card-hdr{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.bull-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.bull-card-name{font-size:.95rem;font-weight:800;color:var(--text)}
+.bull-card-link{margin-left:auto;font-size:.72rem;color:var(--muted);text-decoration:none;opacity:.6}
+.bull-card-link:hover{opacity:1;color:var(--b)}
+.q-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(30,45,74,.3)}
+.q-row:last-child{border:none}
+.q-name{flex:1;font-size:.82rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.q-badges{display:flex;gap:5px;flex-shrink:0}
+.qb{display:inline-flex;align-items:center;padding:2px 8px;border-radius:6px;font-size:.71rem;font-weight:700;white-space:nowrap}
+.qb-ok{background:var(--gr-l);color:var(--gr)}
+.qb-act{background:var(--b-l);color:#60a5fa}
+.qb-wait{background:var(--y-l);color:var(--y)}
+.qb-err{background:var(--r-l);color:var(--r)}
+.qb-dim{background:rgba(107,127,160,.08);color:var(--muted)}
+.bull-empty{font-size:.8rem;color:var(--muted);padding:16px 0;text-align:center}
+/* Panel / ticket list */
+.panel{display:none;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:22px 24px;margin-bottom:8px}
+.panel.open{display:block}
+.panel-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.panel-title{font-size:1.3rem;font-weight:700}
+.panel-close{background:var(--border);border:none;color:var(--text);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600}
+.panel-close:hover{background:var(--dim)}
+.tabs{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+.tab{padding:5px 14px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:.82rem;font-weight:700;transition:all .12s}
+.tab:hover{color:var(--text);border-color:var(--dim)}
+.tab.on{color:#fff}
+.tab.on.t-all{border-color:#fff;background:rgba(255,255,255,.08)}
+.tab.on.t-enc{border-color:var(--b);color:var(--b);background:var(--b-l)}
+.tab.on.t-por{border-color:var(--y);color:var(--y);background:var(--y-l)}
+.tab.on.t-pau{border-color:var(--pau);color:var(--pau);background:var(--pau-l)}
+.tab.on.t-done{border-color:var(--gr);color:var(--gr);background:var(--gr-l)}
+.tc{background:rgba(255,255,255,.1);border-radius:10px;padding:1px 6px;font-size:.73rem;margin-left:4px}
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem}
+.tbl th{text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted);font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.tbl td{padding:9px 12px;border-bottom:1px solid rgba(30,45,74,.4);vertical-align:middle}
+.tbl tr:last-child td{border:none}
+.tbl tr:hover td{background:rgba(255,255,255,.018)}
+.tbl-key{font-family:'Courier New',monospace;font-size:.78rem;color:#5b8dee;white-space:nowrap}
+.tbl-key a{color:inherit;text-decoration:none}
+.tbl-key a:hover{text-decoration:underline}
+.tbl-sum{color:var(--text);max-width:440px}
+.tbl-who{color:var(--muted);white-space:nowrap;font-size:.8rem}
+.tbl-proj{color:var(--dim);white-space:nowrap;font-size:.78rem}
+.tbl-date{color:var(--dim);white-space:nowrap;font-size:.78rem}
+.badge{display:inline-block;padding:3px 9px;border-radius:10px;font-size:.73rem;font-weight:700;white-space:nowrap}
+.b-enc{background:var(--b-l);color:#60a5fa}.b-por{background:var(--y-l);color:#fbbf24}
+.b-pau{background:var(--pau-l);color:#94a3b8}.b-done{background:var(--gr-l);color:#4ade80}
+.empty{text-align:center;padding:36px;color:var(--muted);font-size:.9rem}
+.foot{text-align:center;color:var(--dim);font-size:.75rem;margin-top:16px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.loading .card-num{animation:pulse .9s ease infinite;color:var(--dim)!important}
+@keyframes num-changed{0%{transform:scale(1)}30%{transform:scale(1.18)}100%{transform:scale(1)}}
+.num-changed{animation:num-changed .45s ease!important;color:#fff!important}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <div class="hdr-title"><span class="dot-live"></span>Panel de Tickets · BEPA
+      <span id="flash" style="font-size:.9rem;font-weight:500;color:var(--gr);margin-left:12px;opacity:0;transition:opacity .4s">⚡ Actualizado</span>
+    </div>
+    <div class="hdr-sub" id="last-upd">Cargando datos...</div>
+  </div>
+  <div class="hdr-right">
+    <div id="check-status" style="margin-bottom:4px;font-size:.8rem;color:var(--muted)">● en vivo</div>
+    <div style="font-size:.78rem;color:var(--muted)">próx. verificación <span id="countdown" style="color:var(--text);font-size:.9rem;font-weight:700">20s</span></div>
+  </div>
+</div>
+
+<div class="grid4">
+  <div class="card clickable acc-r" id="card-sin" onclick="showArea('sin-asignar')">
+    <div class="card-icon">🔴</div><div class="card-lbl">Sin Asignar</div>
+    <div class="card-num" id="n-sin">—</div><div class="card-sub">tickets activos</div>
+  </div>
+  <div class="card clickable acc-b" id="card-sop" onclick="showArea('soporte')">
+    <div class="card-icon">🎧</div><div class="card-lbl">Soporte</div>
+    <div class="card-num" id="n-sop">—</div><div class="card-sub">tickets activos</div>
+    <div class="card-members">Jaime · Diana · Jorge · Marcos · Leticia</div>
+  </div>
+  <div class="card clickable acc-p" id="card-dev" onclick="showArea('desarrollo')">
+    <div class="card-icon">💻</div><div class="card-lbl">Desarrollo</div>
+    <div class="card-num" id="n-dev">—</div><div class="card-sub">tickets activos</div>
+    <div class="card-members">Kevin · Daril · Rodrigo · Aldo · Elias · Gustavo · Danays · Blanca</div>
+  </div>
+  <div class="card clickable acc-g" id="card-inf" onclick="showArea('infra')">
+    <div class="card-icon">🖥️</div><div class="card-lbl">Infraestructura</div>
+    <div class="card-num" id="n-inf">—</div><div class="card-sub">tickets activos</div>
+    <div class="card-members">Richard · Fabian</div>
+  </div>
+</div>
+
+<div class="grid3">
+  <div class="card stat-card acc-y">
+    <div class="card-icon">📅</div><div class="card-lbl">Ingresados Hoy</div>
+    <div class="card-num" id="n-hoy">—</div>
+  </div>
+  <div class="card stat-card acc-o">
+    <div class="card-icon">📆</div><div class="card-lbl">Ingresados en el Mes</div>
+    <div class="card-num" id="n-mes">—</div>
+  </div>
+  <div class="card stat-card acc-gr">
+    <div class="card-icon">✅</div><div class="card-lbl">Finalizados en el Mes</div>
+    <div class="card-num" id="n-fin">—</div>
+  </div>
+</div>
+
+<!-- Cola de Trabajos · Futura100 -->
+<div class="bull-section">
+  <div class="section-title">⚙️ &nbsp;Cola de Trabajos · Futura100</div>
+  <div class="bull-grid">
+    <div class="bull-card">
+      <div class="bull-card-hdr">
+        <div class="bull-dot" style="background:#3b82f6"></div>
+        <div class="bull-card-name">Core</div>
+        <a class="bull-card-link" href="https://core-monitor.futura100.com.py/admin/trabajos" target="_blank">↗ ver dashboard</a>
+      </div>
+      <div id="bull-core"><div class="bull-empty">Cargando...</div></div>
+    </div>
+    <div class="bull-card">
+      <div class="bull-card-hdr">
+        <div class="bull-dot" style="background:#a855f7"></div>
+        <div class="bull-card-name">Controller</div>
+        <a class="bull-card-link" href="https://controller-monitor.futura100.com.py/admin/trabajos" target="_blank">↗ ver dashboard</a>
+      </div>
+      <div id="bull-ctrl"><div class="bull-empty">Cargando...</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="panel">
+  <div class="panel-hdr">
+    <div class="panel-title" id="panel-title">Tickets</div>
+    <button class="panel-close" onclick="closePanel()">✕ Cerrar</button>
+  </div>
+  <div class="tabs" id="panel-tabs"></div>
+  <div id="panel-body"></div>
+</div>
+
+<div class="foot" id="foot"></div>
 
 <script>
 const PROXY='https://main.dashboard-bepa.pages.dev/api/jira';
@@ -18,7 +210,7 @@ async function fetchAll(jql){let issues=[],token=null;do{const d=await callProxy
 let activeIssues=[],activeArea=null,activeTab='all',checkTimer=null,checkIn=CHECK_INTERVAL;
 const prev={};
 
-/* ── Bull Queue labels ─────────────────────────────────────────────────── */
+/* ── Bull Queue ─────────────────────────────────────────────────────────── */
 const Q_LABELS={
   generarXml:'Generar XML',firmaXml:'Firma XML',envioSifen:'Envío SIFEN',
   consultaSifen:'Consulta SIFEN',generarXmlEventos:'Generar XML Eventos',
@@ -28,27 +220,24 @@ const Q_LABELS={
   RetornoDocumentoCore:'Retorno Doc. Core',envioEventoCore:'Envío Evento Core',
   consultaEventoCore:'Consulta Evento Core',RetornoEventoCore:'Retorno Evento Core'
 };
-
 function renderQueues(queues,cid){
-  const el=document.getElementById(cid);
-  if(!el)return;
+  const el=document.getElementById(cid);if(!el)return;
   if(!queues||!queues.length){el.innerHTML='<div class="bull-empty">Sin datos</div>';return}
   el.innerHTML=queues.map(q=>{
     const c=q.counts,label=Q_LABELS[q.name]||q.name;
     let badges='';
-    if(c.active>0)badges+=`<span class="qb qb-act">⚡${c.active}</span>`;
-    if(c.waiting>0)badges+=`<span class="qb qb-wait">⏳${c.waiting}</span>`;
-    if(c.failed>0)badges+=`<span class="qb qb-err">✗${c.failed}</span>`;
-    if(!badges)badges=`<span class="qb qb-ok">✓${(c.completed||0).toLocaleString('es')}</span>`;
+    if(c.active>0)badges+=`<span class="qb qb-act">⚡ ${c.active}</span>`;
+    if(c.waiting>0)badges+=`<span class="qb qb-wait">⏳ ${c.waiting}</span>`;
+    if(c.failed>0)badges+=`<span class="qb qb-err">✗ ${c.failed}</span>`;
+    if(!badges)badges=`<span class="qb qb-ok">✓ ${(c.completed||0).toLocaleString('es')}</span>`;
     return`<div class="q-row"><div class="q-name">${label}</div><div class="q-badges">${badges}</div></div>`;
   }).join('');
 }
-
 async function loadBullData(){
   try{
     const[cr,ctr]=await Promise.allSettled([
-      fetch('/api/bull-core').then(r=>r.json()),
-      fetch('/api/bull-controller').then(r=>r.json())
+      fetch('https://main.dashboard-bepa.pages.dev/api/bull-core').then(r=>r.json()),
+      fetch('https://main.dashboard-bepa.pages.dev/api/bull-controller').then(r=>r.json())
     ]);
     if(cr.status==='fulfilled')renderQueues(cr.value.queues,'bull-core');
     else document.getElementById('bull-core').innerHTML='<div class="bull-empty" style="color:var(--r)">Error al cargar</div>';
@@ -57,6 +246,7 @@ async function loadBullData(){
   }catch(e){console.error('Bull error:',e)}
 }
 
+/* ── Jira ──────────────────────────────────────────────────────────────── */
 async function loadData(){
   setLoading(true);
   try{
