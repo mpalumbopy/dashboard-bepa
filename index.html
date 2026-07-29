@@ -6,7 +6,7 @@
 <title>Dashboard Jira · grupobepa</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
-:root{color-scheme:light;--blue:#0052CC;--blue-l:#E6F0FF;--green:#00875A;--green-l:#E3FCEF;--orange:#FF8B00;--orange-l:#FFF7D6;--red:#DE350B;--red-l:#FFEBE6;--purple:#6554C0;--g50:#F4F5F7;--g100:#EBECF0;--g300:#C1C7D0;--g500:#5E6C84;--g700:#344563;--g900:#172B4D;--r:10px;--sh:0 1px 4px rgba(9,30,66,.1),0 0 1px rgba(9,30,66,.08)}
+:root{color-scheme:light;--blue:#0052CC;--blue-l:#E6F0FF;--green:#00875A;--green-l:#E3FCEF;--orange:#FF8B00;--orange-l:#FFF7D6;--red:#DE350B;--red-l:#FFEBE6;--purple:#6554C0;--pause:#6B778C;--pause-l:#EFF0F3;--g50:#F4F5F7;--g100:#EBECF0;--g300:#C1C7D0;--g500:#5E6C84;--g700:#344563;--g900:#172B4D;--r:10px;--sh:0 1px 4px rgba(9,30,66,.1),0 0 1px rgba(9,30,66,.08)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--g50);color:var(--g900);font-size:14px}
 
@@ -149,6 +149,7 @@ main{padding:16px 22px;max-width:1500px;margin:0 auto}
 .tab.t-por{border-color:var(--orange);color:var(--orange);background:var(--orange-l)}.tab.t-por.on,.tab.t-por:hover{background:var(--orange);color:#fff}
 .tab.t-all.on,.tab.t-all:hover{background:var(--g700);color:#fff;border-color:var(--g700)}
 .tab.t-done{border-color:var(--green);color:var(--green);background:var(--green-l)}.tab.t-done.on,.tab.t-done:hover{background:var(--green);color:#fff}
+.tab.t-pau{border-color:var(--pause);color:var(--pause);background:var(--pause-l)}.tab.t-pau.on,.tab.t-pau:hover{background:var(--pause);color:#fff}
 .tc{font-size:10px;background:rgba(0,0,0,.1);border-radius:8px;padding:1px 5px;margin-left:3px}
 .sec-h-d{font-size:13px;font-weight:700;color:var(--g700);margin-bottom:9px;display:flex;align-items:center;gap:8px}
 .sec-h-d small{font-size:11px;font-weight:400;color:var(--g500)}
@@ -170,12 +171,15 @@ td{padding:8px 10px;border-bottom:1px solid var(--g50);vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr.idle{background:#FFFBF0}
 tr:hover td{background:var(--g50)}
+tr[onclick]:hover td{background:var(--blue-l)}
+.tlink{color:var(--g900);transition:color .1s}
+tr:hover .tlink{color:var(--blue);text-decoration:underline}
 .ik{font-family:monospace;font-size:10px;font-weight:700;color:var(--blue);background:var(--blue-l);padding:2px 5px;border-radius:3px;white-space:nowrap;text-decoration:none}
 .pt{display:inline-block;padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700;white-space:nowrap}
 .badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700;text-transform:uppercase;white-space:nowrap}
 .b-enc{background:#DEEBFF;color:#0052CC}.b-qa{background:#EAE6FF;color:#403294}.b-por{background:#FFF7D6;color:#974F0C}.b-rec{background:#FFEBE6;color:#BF2600}.b-gray{background:#EBECF0;color:#344563}
 .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:3px;flex-shrink:0}
-.d-e{background:var(--blue)}.d-p{background:var(--orange)}
+.d-e{background:var(--blue)}.d-p{background:var(--orange)}.d-pau{background:var(--pause)}
 .prio-d{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:3px}
 .p-hi{background:#DE350B}.p-med{background:#FF8B00}.p-lo{background:#2684FF}.p-x{background:#C1C7D0}
 .idle-tag{background:var(--orange-l);color:var(--orange);border:1px solid #FFD166;border-radius:4px;padding:1px 5px;font-size:9px;font-weight:700;margin-left:3px}
@@ -222,6 +226,46 @@ tr:hover td{background:var(--g50)}
 
 @media(max-width:700px){.cards-grid{grid-template-columns:1fr}.chart-row{grid-template-columns:1fr}.ustats{gap:6px}}
 @media print{.hdr,.topbar,.pnav,.btn,.toast,.sort-bar,.tabs,.ver-btn{display:none!important}.view:not(.on){display:none!important}body{background:#fff}.rdir-print-btn{display:none!important}}
+/* ── TICKET MODAL ── */
+.tmodal-overlay{position:fixed;inset:0;background:rgba(9,30,66,.55);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:48px 16px 24px;overflow-y:auto;backdrop-filter:blur(2px)}
+.tmodal-overlay.open{display:flex}
+.tmodal{background:#fff;border-radius:10px;width:100%;max-width:920px;box-shadow:0 20px 60px rgba(9,30,66,.25);margin:auto;overflow:hidden;min-height:200px}
+.tmodal-hdr{padding:16px 22px;border-bottom:1px solid var(--g100);display:flex;align-items:flex-start;gap:12px}
+.tmodal-key{font-family:monospace;font-size:12px;font-weight:700;color:var(--blue);background:var(--blue-l);padding:4px 9px;border-radius:4px;text-decoration:none;white-space:nowrap;flex-shrink:0;align-self:center}
+.tmodal-key:hover{background:var(--blue);color:#fff}
+.tmodal-title{font-size:16px;font-weight:700;color:var(--g900);flex:1;line-height:1.4}
+.tmodal-close{background:var(--g100);border:none;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:12px;font-weight:700;color:var(--g500);flex-shrink:0;transition:background .15s;align-self:flex-start}
+.tmodal-close:hover{background:var(--g300);color:var(--g900)}
+.tmodal-body{display:grid;grid-template-columns:1fr 252px}
+.tmodal-main{padding:20px 22px;border-right:1px solid var(--g100);overflow-y:auto;max-height:72vh}
+.tmodal-side{padding:16px 18px;background:#f8f9fb;overflow-y:auto;max-height:72vh}
+.tmodal-section{margin-bottom:22px}
+.tmodal-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--g500);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--g100)}
+.tmodal-desc{font-size:13px;color:var(--g700);line-height:1.7}
+.tmodal-desc p{margin-bottom:8px}.tmodal-desc p:last-child{margin-bottom:0}
+.tmodal-desc ul,.tmodal-desc ol{margin:6px 0 6px 18px}.tmodal-desc li{margin-bottom:3px}
+.tmodal-desc code{background:var(--g100);padding:1px 5px;border-radius:3px;font-size:11px;font-family:monospace}
+.tmodal-desc pre{background:var(--g100);padding:10px 14px;border-radius:6px;overflow-x:auto;font-size:11px;margin:8px 0}
+.tmodal-desc blockquote{border-left:3px solid #DFE1E6;padding-left:12px;color:var(--g500);font-style:italic;margin:8px 0}
+.tmodal-desc a{color:var(--blue)}.tmodal-desc h1,.tmodal-desc h2,.tmodal-desc h3{font-size:14px;font-weight:700;margin:12px 0 6px}
+.tmodal-empty-note{color:var(--g300);font-size:12px;font-style:italic}
+.tmeta-field{margin-bottom:12px}
+.tmeta-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--g500);margin-bottom:3px}
+.tmeta-val{font-size:12px;color:var(--g700);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tmeta-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
+.tmodal-status{display:inline-flex;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.cm-item{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--g100)}.cm-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.cm-hdr{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.cm-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.cm-who{font-size:12px;font-weight:600;color:var(--g700)}.cm-when{font-size:10px;color:var(--g300);margin-left:auto}
+.cm-body{font-size:12px;color:var(--g700);line-height:1.65}.cm-body p{margin-bottom:5px}
+.cl-item{padding:7px 0;border-bottom:1px solid #F4F5F7}.cl-item:last-child{border-bottom:none}
+.cl-who{font-size:11px;font-weight:600;color:var(--g700)}.cl-when{font-size:10px;color:var(--g300);margin-left:5px}
+.cl-change{font-size:11px;color:var(--g500);margin-top:2px}
+.cl-field{color:var(--g700);font-weight:600}.cl-arrow{margin:0 4px}
+.cl-from{color:var(--red)}.cl-to{color:var(--green)}
+.tmodal-loading{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--g300);font-size:13px;gap:10px}
+.tmodal-spin{width:20px;height:20px;border:2px solid var(--g100);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite}
 </style>
 </head>
 <body>
@@ -285,10 +329,47 @@ tr:hover td{background:var(--g50)}
         </div>
       </div>
     </div>
+    <span class="fl">Estado:</span>
+    <div class="ms-wrap" id="ms-status-wrap">
+      <div class="ms-trigger" onclick="toggleMs('status')">
+        <span class="ms-label" id="ms-status-label">Todos</span>
+        <span class="ms-badge" id="ms-status-badge" style="display:none">0</span>
+        <span class="ms-arrow">▾</span>
+      </div>
+      <div class="ms-dropdown" id="ms-status-dd">
+        <div class="ms-search"><input type="text" placeholder="Buscar estado…" oninput="filterMs('status',this.value)" id="ms-status-q"></div>
+        <div class="ms-opts" id="ms-status-opts"></div>
+        <div class="ms-foot">
+          <span class="ms-foot-count" id="ms-status-count">0 seleccionados</span>
+          <div class="ms-foot-btns">
+            <button class="ms-foot-btn sel-all" onclick="selectAllMs('status')">Todos</button>
+            <button class="ms-foot-btn clear" onclick="clearMs('status')">Limpiar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="fl">Descripción:</span>
+    <div style="display:flex;align-items:center;gap:4px;border:1px solid var(--g300);border-radius:6px;padding:3px 8px;background:#fff;transition:border-color .15s" onfocusin="this.style.borderColor='var(--blue)'" onfocusout="this.style.borderColor='var(--g300)'">
+      <span style="font-size:12px;color:var(--g300)">🔍</span>
+      <input id="dq" type="text" placeholder="Buscar en tarea…" style="border:none;outline:none;font-size:12px;color:var(--g700);width:150px;background:transparent" oninput="setDescSearch(this.value)" autocomplete="off">
+      <span id="dq-clear" onclick="clearDescSearch()" style="display:none;cursor:pointer;color:var(--g300);font-size:13px;font-weight:700;line-height:1" title="Limpiar">✕</span>
+    </div>
+    <span class="fl">Fecha:</span>
+    <div style="display:flex;align-items:center;gap:4px;border:1px solid var(--g300);border-radius:6px;padding:3px 8px;background:#fff" onfocusin="this.style.borderColor='var(--blue)'" onfocusout="this.style.borderColor='var(--g300)'">
+      <input type="date" id="gf-from" style="border:none;outline:none;font-size:11px;color:var(--g700);cursor:pointer;background:transparent" title="Desde" onchange="setGlobalFilter(this.value, document.getElementById('gf-to').value)">
+      <span style="color:var(--g300);font-size:11px">→</span>
+      <input type="date" id="gf-to" style="border:none;outline:none;font-size:11px;color:var(--g700);cursor:pointer;background:transparent" title="Hasta" onchange="setGlobalFilter(document.getElementById('gf-from').value, this.value)">
+      <span id="gf-clear" onclick="clearGlobalFilter()" style="display:none;cursor:pointer;color:var(--red);font-size:12px;font-weight:700;margin-left:2px" title="Limpiar fechas">✕</span>
+    </div>
     <span class="fl">Ocioso ≥</span>
     <select id="fI" onchange="renderAll()">
       <option value="3">3d</option><option value="5">5d</option><option value="7" selected>7d</option><option value="10">10d</option>
     </select>
+    <div id="sq-wrap" style="display:flex;align-items:center;gap:4px;border:1px solid var(--g300);border-radius:6px;padding:3px 8px;background:#fff;transition:border-color .15s" onfocusin="this.style.borderColor='var(--blue)'" onfocusout="this.style.borderColor='var(--g300)'">
+      <span style="font-size:13px;color:var(--g300)">🔍</span>
+      <input id="sq" type="text" placeholder="Buscar ticket…" value="" style="border:none;outline:none;font-size:12px;color:var(--g700);width:130px;background:transparent" oninput="setSearch(this.value)">
+      <span id="sq-clear" onclick="clearSearch()" style="display:none;cursor:pointer;color:var(--g300);font-size:13px;font-weight:700;line-height:1" title="Limpiar">✕</span>
+    </div>
   </div>
 </div>
 
@@ -341,7 +422,7 @@ tr:hover td{background:var(--g50)}
 const BASE = "https://grupobepa.atlassian.net/browse/";
 const JQL  = "assignee is not EMPTY ORDER BY updated DESC";
 const FIELDS = ["summary","status","assignee","reporter","project","issuetype",
-                "timeoriginalestimate","timespent","timeestimate","created","updated","priority"];
+                "timeoriginalestimate","timespent","timeestimate","created","updated","priority","description"];
 const COLORS = ['#0052CC','#00875A','#6554C0','#FF5630','#FF8B00','#00B8D9',
                 '#36B37E','#FF7452','#253858','#97A0AF','#2684FF','#403294',
                 '#006644','#BF2600','#006278'];
@@ -352,8 +433,10 @@ let allIssues=[], cExec=null, cExecTime=null;
 let sortMode='tasks', activeTab='all', activePage='ejecutivo';
 let _lastUsers=[], _lastIss=[], _lastIdle=[], _lastEncN=0, _lastPorN=0, _lastThr=7;
 let doneFrom=null, doneTo=null;
-const msState={proj:new Set(),user:new Set()};
-const msItems={proj:[],user:[]};
+let filterFrom=null, filterTo=null;
+let searchQ='', descQ='';
+const msState={proj:new Set(),user:new Set(),status:new Set()};
+const msItems={proj:[],user:[],status:[]};
 let _userIdMap={};
 
 // ── JIRA API PROXY CALL ────────────────────────────────────────────────────────
@@ -417,12 +500,26 @@ async function loadData(){
       i._isReporterOnly = !i.fields.assignee && !!i.fields.reporter;
     });
 
+    // Extraer texto plano del campo description (Atlassian Document Format)
+    function adfText(node){
+      if(!node)return'';
+      if(typeof node==='string')return node;
+      let t='';
+      if(node.text)t+=node.text;
+      if(node.content)node.content.forEach(c=>{t+=' '+adfText(c);});
+      return t;
+    }
+    normed.forEach(i=>{
+      i._descText=(adfText(i.fields.description)||'').replace(/\s+/g,' ').trim();
+    });
+
     allIssues = normed;
     const projs=[...new Set(normed.map(i=>pName(i.fields.project)).filter(x=>x&&x!=='—'))].sort();
     const seenUsers={};
     normed.forEach(i=>{ if(i._userId&&!seenUsers[i._userId]) seenUsers[i._userId]={id:i._userId,name:i._userName}; });
     const userList=Object.values(seenUsers).sort((a,b)=>a.name.localeCompare(b.name));
-    buildMs('proj',projs); buildMsUsers(userList);
+    const statuses=[...new Set(normed.map(i=>i.fields.status?.name).filter(Boolean))].sort();
+    buildMs('proj',projs); buildMsUsers(userList); buildMs('status',statuses);
     document.getElementById('lu').textContent =
       new Date().toLocaleString('es-PY',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
     document.getElementById('wl').textContent = '📅 Semana: '+wkR();
@@ -462,10 +559,13 @@ const CLOSED=new Set([
   // Legado / variantes anteriores
   'finalizada','done','cerrado','cerrada','closed','resuelto','resuelta',
   'completado','completada','completo','completa','complete','completed',
-  'terminado','terminada','cancelled','canceled','en pausa'
+  'terminado','terminada','cancelled','canceled'
+]);
+const PAUSED=new Set([
+  'en pausa','paused','pause','on hold','suspendido','suspendida','bloqueado','bloqueada','blocked'
 ]);
 function isDone(n){return CLOSED.has((n||'').toLowerCase().trim())}
-function sCat(n){const l=(n||'').toLowerCase().trim();if(CLOSED.has(l))return 'done';return ENC.has(l)?'enc':'por'}
+function sCat(n){const l=(n||'').toLowerCase().trim();if(CLOSED.has(l))return 'done';if(PAUSED.has(l))return 'pau';return ENC.has(l)?'enc':'por'}
 function respUser(fields){return fields.assignee||fields.reporter||null;}
 function fmtS(s){if(!s||s===0)return null;const h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h?m?h+'h '+m+'m':h+'h':m+'m'}
 function dAgo(d){if(!d)return null;return Math.floor((Date.now()-new Date(d).getTime())/86400000)}
@@ -479,7 +579,7 @@ function sBadge(s){const n=(s||'').toLowerCase();if(n.includes('curso')||n.inclu
 function showToast(msg,dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 
 // ── MULTI-SELECT ───────────────────────────────────────────────────────────────
-function toggleMs(id){const wrap=document.getElementById('ms-'+id+'-wrap');const isOpen=wrap.classList.contains('open');['proj','user'].forEach(x=>{document.getElementById('ms-'+x+'-wrap').classList.remove('open');document.getElementById('ms-'+x+'-q').value='';filterMs(x,'');});if(!isOpen){wrap.classList.add('open');document.getElementById('ms-'+id+'-q').focus();}}
+function toggleMs(id){const wrap=document.getElementById('ms-'+id+'-wrap');const isOpen=wrap.classList.contains('open');['proj','user','status'].forEach(x=>{const w=document.getElementById('ms-'+x+'-wrap');if(w){w.classList.remove('open');}const q=document.getElementById('ms-'+x+'-q');if(q){q.value='';filterMs(x,'');}});if(!isOpen){wrap.classList.add('open');document.getElementById('ms-'+id+'-q').focus();}}
 function buildMs(id,items){msItems[id]=items;const opts=document.getElementById('ms-'+id+'-opts');opts.innerHTML=items.map(item=>`<label class="ms-opt"><input type="checkbox" value="${item.replace(/"/g,'&quot;')}" onchange="toggleMsItem('${id}',this.value,this.checked)" ${msState[id].has(item)?'checked':''}><span>${item}</span></label>`).join('');updateMsLabel(id);}
 function buildMsUsers(userList){_userIdMap={};userList.forEach(u=>{_userIdMap[u.id]=u.name;});msItems.user=userList.map(u=>u.id);const opts=document.getElementById('ms-user-opts');opts.innerHTML=userList.map(u=>`<label class="ms-opt"><input type="checkbox" value="${u.id.replace(/"/g,'&quot;')}" onchange="toggleMsItem('user',this.value,this.checked)" ${msState.user.has(u.id)?'checked':''}><span>${u.name}</span></label>`).join('');updateMsLabel('user');}
 function toggleMsItem(id,val,checked){if(checked)msState[id].add(val);else msState[id].delete(val);updateMsLabel(id);renderAll();}
@@ -487,7 +587,7 @@ function clearMs(id){msState[id].clear();document.querySelectorAll('#ms-'+id+'-o
 function selectAllMs(id){msItems[id].forEach(item=>msState[id].add(item));document.querySelectorAll('#ms-'+id+'-opts input').forEach(cb=>{if(cb.closest('.ms-opt').style.display!=='none')cb.checked=true;});updateMsLabel(id);renderAll();}
 function filterMs(id,q){const query=q.toLowerCase();document.querySelectorAll('#ms-'+id+'-opts .ms-opt').forEach(opt=>{opt.style.display=opt.querySelector('span').textContent.toLowerCase().includes(query)?'':'none';});}
 function updateMsLabel(id){const count=msState[id].size,total=msItems[id].length;const label=document.getElementById('ms-'+id+'-label'),badge=document.getElementById('ms-'+id+'-badge'),countEl=document.getElementById('ms-'+id+'-count');if(count===0){label.textContent='Todos';label.classList.remove('has-sel');badge.style.display='none';}else{label.textContent=count===total?'Todos':count+' '+(id==='proj'?'proyecto':'usuario')+(count>1?'s':'');label.classList.add('has-sel');badge.textContent=count;badge.style.display='';}countEl.textContent=count+' seleccionado'+(count!==1?'s':'');}
-document.addEventListener('click',e=>{if(!e.target.closest('.ms-wrap'))['proj','user'].forEach(x=>document.getElementById('ms-'+x+'-wrap').classList.remove('open'));});
+document.addEventListener('click',e=>{if(!e.target.closest('.ms-wrap'))['proj','user','status'].forEach(x=>{const w=document.getElementById('ms-'+x+'-wrap');if(w)w.classList.remove('open');});});
 
 // ── PAGE & TAB NAV ─────────────────────────────────────────────────────────────
 function setPage(p){activePage=p;['ejecutivo','detalle','direccion'].forEach(x=>{document.getElementById('pn-'+x).classList.toggle('on',x===p);document.getElementById('v-'+x).classList.toggle('on',x===p);});if(p==='direccion')renderDireccion(_lastUsers,_lastIss,_lastIdle,_lastEncN,_lastPorN,_lastThr);}
@@ -508,14 +608,85 @@ function goToUser(uid){
   },80);
 }
 
+// ── FUZZY DESC SEARCH ─────────────────────────────────────────────────────────
+function norm(s){return(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();}
+function fuzzyMatch(query,text){
+  const q=norm(query), t=norm(text);
+  if(!q)return true;
+  // Split query in terms — all terms must match (AND)
+  return q.split(/\s+/).every(term=>{
+    if(t.includes(term))return true; // exact substring
+    if(term.length<3)return t.includes(term);
+    // Fuzzy: chars of term appear in order in text (allows gaps)
+    let ti=0;
+    for(let i=0;i<t.length&&ti<term.length;i++){if(t[i]===term[ti])ti++;}
+    return ti===term.length;
+  });
+}
+function setDescSearch(v){
+  descQ=v.trim();
+  document.getElementById('dq-clear').style.display=descQ?'':'none';
+  if(descQ&&activePage!=='detalle')setPage('detalle');
+  renderAll();
+}
+function clearDescSearch(){descQ='';document.getElementById('dq').value='';document.getElementById('dq-clear').style.display='none';renderAll();}
+
+// ── GLOBAL DATE FILTER ────────────────────────────────────────────────────────
+function setGlobalFilter(from,to){
+  filterFrom=from?new Date(from+'T00:00:00'):null;
+  filterTo=to?new Date(to+'T00:00:00'):null;
+  document.getElementById('gf-clear').style.display=(filterFrom||filterTo)?'':'none';
+  renderAll();
+}
+function clearGlobalFilter(){
+  filterFrom=null;filterTo=null;
+  document.getElementById('gf-from').value='';
+  document.getElementById('gf-to').value='';
+  document.getElementById('gf-clear').style.display='none';
+  renderAll();
+}
+
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+function setSearch(v){
+  searchQ=v.trim();
+  document.getElementById('sq-clear').style.display=searchQ?'':'none';
+  if(searchQ){setPage('detalle');}
+  renderAll();
+}
+function clearSearch(){searchQ='';document.getElementById('sq').value='';document.getElementById('sq-clear').style.display='none';renderAll();}
+
 // ── RENDER ALL ─────────────────────────────────────────────────────────────────
 function renderAll(){
   const thr=parseInt(document.getElementById('fI').value)||7;
   let iss=allIssues;
-  if(msState.proj.size)iss=iss.filter(i=>msState.proj.has(pName(i.fields.project)));
-  if(msState.user.size)iss=iss.filter(i=>i._userId&&msState.user.has(i._userId));
+  if(searchQ){
+    const q=searchQ.toLowerCase();
+    iss=allIssues.filter(i=>(i.key||'').toLowerCase().includes(q)||(i.fields.summary||'').toLowerCase().includes(q));
+  } else {
+    if(msState.proj.size)iss=iss.filter(i=>msState.proj.has(pName(i.fields.project)));
+    if(msState.user.size)iss=iss.filter(i=>i._userId&&msState.user.has(i._userId));
+    if(msState.status.size)iss=iss.filter(i=>msState.status.has(i.fields.status?.name));
+    if(filterFrom||filterTo)iss=iss.filter(i=>{
+      const d=new Date(i.fields.updated||i.fields.created);
+      if(filterFrom&&d<filterFrom)return false;
+      if(filterTo){const end=new Date(filterTo);end.setHours(23,59,59,999);if(d>end)return false;}
+      return true;
+    });
+  }
+  // Búsqueda en columna Tarea: exactas primero (score 2), luego letras en orden (score 1)
+  if(descQ){
+    const dqL=descQ.toLowerCase();
+    iss=iss.map(i=>{
+      const s=(i.fields.summary||'').toLowerCase();
+      let sc=0;
+      if(s.includes(dqL)){sc=2;}
+      else{let qi=0;for(let ci=0;ci<s.length&&qi<dqL.length;ci++){if(s[ci]===dqL[qi])qi++;}if(qi===dqL.length)sc=1;}
+      i._score=sc;return i;
+    }).filter(i=>i._score>0).sort((a,b)=>b._score-a._score);
+  }
   const encN=iss.filter(i=>sCat(i.fields.status?.name)==='enc').length;
   const porN=iss.filter(i=>sCat(i.fields.status?.name)==='por').length;
+  const pausN=iss.filter(i=>sCat(i.fields.status?.name)==='pau').length;
   const idle=iss.filter(i=>{const d=dAgo(i.fields.updated);return d!==null&&d>=thr&&sCat(i.fields.status?.name)==='por'&&!isDone(i.fields.status?.name)});
   const byU={};
   iss.forEach(i=>{const k=i._userId;if(!k)return;if(!byU[k])byU[k]={name:i._userName||k,id:k,tasks:[],projs:new Set()};byU[k].tasks.push(i);byU[k].projs.add(pName(i.fields.project));});
@@ -546,8 +717,11 @@ function renderAll(){
   const doneN=iss.filter(i=>isDone(i.fields.status?.name)).length;
   const activeN=iss.length-doneN;
   let issDetail=iss.filter(i=>!isDone(i.fields.status?.name));
-  if(activeTab==='enc')issDetail=issDetail.filter(i=>sCat(i.fields.status?.name)==='enc');
+  if(searchQ||descQ){
+    issDetail=iss; // búsqueda muestra todos los estados
+  } else if(activeTab==='enc')issDetail=issDetail.filter(i=>sCat(i.fields.status?.name)==='enc');
   else if(activeTab==='por')issDetail=issDetail.filter(i=>sCat(i.fields.status?.name)==='por');
+  else if(activeTab==='pau')issDetail=iss.filter(i=>sCat(i.fields.status?.name)==='pau');
   else if(activeTab==='done'){
     issDetail=iss.filter(i=>isDone(i.fields.status?.name));
     if(doneFrom||doneTo){
@@ -560,8 +734,15 @@ function renderAll(){
     }
   }
   const byUd={};issDetail.forEach(i=>{const k=i._userId;if(!k)return;if(!byUd[k])byUd[k]={name:i._userName||k,id:k,tasks:[]};byUd[k].tasks.push(i);});
-  const usersDetail=Object.values(byUd).sort((a,b)=>b.tasks.length-a.tasks.length);
-  renderIdle(idle);renderTabs(encN,porN,activeN,doneN);
+  const usersDetail=Object.values(byUd).sort((a,b)=>{
+    if(descQ){
+      const aS=Math.max(0,...a.tasks.map(t=>t._score||0));
+      const bS=Math.max(0,...b.tasks.map(t=>t._score||0));
+      if(bS!==aS)return bS-aS;
+    }
+    return b.tasks.length-a.tasks.length;
+  });
+  renderIdle(idle);renderTabs(encN,porN,activeN,doneN,pausN);
   document.getElementById('uc').textContent='('+usersDetail.length+' usuarios)';
   renderUsers(usersDetail,thr);
   if(activePage==='direccion')renderDireccion(_lastUsers,iss,idle,encN,porN,thr);
@@ -636,7 +817,7 @@ function renderCards(users,thr){
 
 // ── IDLE BOX ───────────────────────────────────────────────────────────────────
 function renderIdle(idle){const b=document.getElementById('ib');if(!idle.length){b.style.display='none';return;}b.style.display='';document.getElementById('ic').innerHTML=idle.map(i=>`<span class="idle-chip">⏸ ${i.key} · ${aName(respUser(i.fields))?.split(' ')[0]||'?'} · ${dAgo(i.fields.updated)}d</span>`).join('');}
-function renderTabs(e,p,a,dn){
+function renderTabs(e,p,a,dn,pausN=0){
   const df=doneFrom?doneFrom.toISOString().slice(0,10):'';
   const dt=doneTo?doneTo.toISOString().slice(0,10):'';
   const datePicker=activeTab==='done'?`
@@ -649,7 +830,7 @@ function renderTabs(e,p,a,dn){
       ${(doneFrom||doneTo)?`<span onclick="clearDoneFilter()" style="cursor:pointer;color:var(--red);font-size:11px;margin-left:2px;font-weight:700" title="Limpiar filtro">✕</span>`:''}
     </span>`:''
   ;
-  document.getElementById('tabs').innerHTML=`<span class="tab t-all ${activeTab==='all'?'on':''}" onclick="setTab('all')">Activas<span class="tc">${a}</span></span><span class="tab t-enc ${activeTab==='enc'?'on':''}" onclick="setTab('enc')">● En Curso<span class="tc">${e}</span></span><span class="tab t-por ${activeTab==='por'?'on':''}" onclick="setTab('por')">● Por Hacer<span class="tc">${p}</span></span><span class="tab t-done ${activeTab==='done'?'on':''}" onclick="setTab('done')">✅ Finalizadas<span class="tc">${dn||0}</span></span>${datePicker}`;
+  document.getElementById('tabs').innerHTML=`<span class="tab t-all ${activeTab==='all'?'on':''}" onclick="setTab('all')">Activas<span class="tc">${a}</span></span><span class="tab t-enc ${activeTab==='enc'?'on':''}" onclick="setTab('enc')">● En Curso<span class="tc">${e}</span></span><span class="tab t-por ${activeTab==='por'?'on':''}" onclick="setTab('por')">● Por Hacer<span class="tc">${p}</span></span>${pausN?`<span class="tab t-pau ${activeTab==='pau'?'on':''}" onclick="setTab('pau')">⏸ En Pausa<span class="tc">${pausN}</span></span>`:''}<span class="tab t-done ${activeTab==='done'?'on':''}" onclick="setTab('done')">✅ Finalizadas<span class="tc">${dn||0}</span></span>${datePicker}`;
 }
 function setDoneFilter(from,to){
   doneFrom=from?new Date(from+'T00:00:00'):null;
@@ -664,8 +845,9 @@ function renderUsers(users,thr){
   if(!users.length){c.innerHTML='<div class="empty">Sin tareas para los filtros seleccionados.</div>';return;}
   users.forEach((u,i)=>{
     const col=COLORS[i%COLORS.length];
-    const eT=u.tasks.filter(t=>sCat(t.fields.status?.name)==='enc'&&!isDone(t.fields.status?.name));
-    const pT=u.tasks.filter(t=>sCat(t.fields.status?.name)==='por'&&!isDone(t.fields.status?.name));
+    const eT=u.tasks.filter(t=>sCat(t.fields.status?.name)==='enc');
+    const pT=u.tasks.filter(t=>sCat(t.fields.status?.name)==='por');
+    const puT=u.tasks.filter(t=>sCat(t.fields.status?.name)==='pau');
     const dT=u.tasks.filter(t=>isDone(t.fields.status?.name));
     const idC=u.tasks.filter(t=>{const d=dAgo(t.fields.updated);return d!==null&&d>=thr&&sCat(t.fields.status?.name)==='por'&&!isDone(t.fields.status?.name);}).length;
     const projs=[...new Set(u.tasks.map(t=>pName(t.fields.project)).filter(Boolean))].sort().join(', ');
@@ -676,8 +858,9 @@ function renderUsers(users,thr){
     let body='';
     if(eT.length)body+=`<div><div class="sec-tasks-h" style="background:var(--blue-l);color:var(--blue)"><span class="dot d-e"></span> En Curso · ${eT.length} tarea${eT.length!==1?'s':''}</div>${buildTable(eT,thr)}</div>`;
     if(pT.length)body+=`<div><div class="sec-tasks-h" style="background:var(--orange-l);color:var(--orange)"><span class="dot d-p"></span> Por Hacer · ${pT.length} tarea${pT.length!==1?'s':''}</div>${buildTable(pT,thr)}</div>`;
+    if(puT.length)body+=`<div><div class="sec-tasks-h" style="background:var(--pause-l);color:var(--pause)"><span class="dot d-pau"></span> En Pausa · ${puT.length} tarea${puT.length!==1?'s':''}</div>${buildTable(puT,thr)}</div>`;
     if(dT.length)body+=`<div><div class="sec-tasks-h" style="background:var(--green-l);color:var(--green)">✅ Finalizadas · ${dT.length} tarea${dT.length!==1?'s':''}</div>${buildTable(dT,thr)}</div>`;
-    d.innerHTML=`<div class="uh" onclick="toggleC(this)"><div class="av-sm" style="background:${col}">${ini(u.name)}</div><div class="ui"><div class="un">${u.name}</div><div class="um">📁 ${projs}</div></div><div class="ustats"><div class="us-stat enc"><div class="us-stat-v">${eT.length}</div><div class="us-stat-l">En Curso</div></div><div class="us-stat warn"><div class="us-stat-v">${pT.length}</div><div class="us-stat-l">Por Hacer</div></div><div class="us-stat ${idC?'danger':''}"><div class="us-stat-v">${idC}</div><div class="us-stat-l">Sin actividad</div></div>${dT.length?`<div class="us-stat ok"><div class="us-stat-v">${dT.length}</div><div class="us-stat-l">✅ Finalizadas</div></div>`:''}<div class="us-stat"><div class="us-stat-v">${fmtS(tE)||'—'}</div><div class="us-stat-l">Estim.</div></div><div class="us-stat"><div class="us-stat-v">${fmtS(tS)||'—'}</div><div class="us-stat-l">Usado</div></div><div class="us-stat"><div class="us-stat-v">${fmtS(tR)||'—'}</div><div class="us-stat-l">Resta</div></div></div><div class="chev open">▶</div></div><div class="ub">${body}</div>`;
+    d.innerHTML=`<div class="uh" onclick="toggleC(this)"><div class="av-sm" style="background:${col}">${ini(u.name)}</div><div class="ui"><div class="un">${u.name}</div><div class="um">📁 ${projs}</div></div><div class="ustats"><div class="us-stat enc"><div class="us-stat-v">${eT.length}</div><div class="us-stat-l">En Curso</div></div><div class="us-stat warn"><div class="us-stat-v">${pT.length}</div><div class="us-stat-l">Por Hacer</div></div><div class="us-stat ${idC?'danger':''}"><div class="us-stat-v">${idC}</div><div class="us-stat-l">Sin actividad</div></div>${puT.length?`<div class="us-stat"><div class="us-stat-v" style="color:var(--pause)">${puT.length}</div><div class="us-stat-l">⏸ En Pausa</div></div>`:''}${dT.length?`<div class="us-stat ok"><div class="us-stat-v">${dT.length}</div><div class="us-stat-l">✅ Finalizadas</div></div>`:''}<div class="us-stat"><div class="us-stat-v">${fmtS(tE)||'—'}</div><div class="us-stat-l">Estim.</div></div><div class="us-stat"><div class="us-stat-v">${fmtS(tS)||'—'}</div><div class="us-stat-l">Usado</div></div><div class="us-stat"><div class="us-stat-v">${fmtS(tR)||'—'}</div><div class="us-stat-l">Resta</div></div></div><div class="chev open">▶</div></div><div class="ub">${body}</div>`;
     c.appendChild(d);
   });
 }
@@ -693,7 +876,7 @@ function buildTable(tasks,thr){
     const pk=pKey(f.project)||'',pkn=pName(f.project)||'—',pc=pcs[pk]||'#0052CC',sn=f.status?.name||'',cat=sCat(sn);
     const prog=pct!==null?`<div class="pb-w"><div class="pb"><div class="pb-f" style="width:${pct}%;background:${pct>80?'#DE350B':pct>50?'#FF8B00':'#00875A'}"></div></div><span class="pb-p">${pct}%</span></div>`:'<span class="na">—</span>';
     const eta=etaDate(f.timeestimate);
-    return `<tr class="${isI?'idle':''}"><td><a class="ik" href="${BASE}${t.key}" target="_blank">${t.key}</a></td><td><span class="pt" style="background:${pc}22;color:${pc};font-size:9px">${pkn}</span></td><td><span class="smry" title="${(f.summary||'').replace(/"/g,'&quot;')}">${f.summary||'—'}</span></td><td><span class="dot ${cat==='enc'?'d-e':'d-p'}"></span><span class="badge ${sBadge(sn)}">${sn}</span></td><td><span class="prio-d ${prioC(f.priority?.name)}"></span>${f.priority?.name||'—'}</td><td>${est||'<span class="na">—</span>'}</td><td>${spent||'<span class="na">—</span>'}</td><td>${prog}</td><td>${fmtDate(eta)?'~'+fmtDate(eta):'<span class="na">—</span>'}${isI&&idle!==null?`<span class="idle-tag">⏸${idle}d</span>`:''}</td><td>${age!==null?age+'d':'—'}</td></tr>`;
+    return `<tr class="${isI?'idle':''}" style="cursor:pointer" onclick="openTicket('${t.key}')"><td><a class="ik" style="cursor:pointer" onclick="event.stopPropagation();openTicket('${t.key}')">${t.key}</a></td><td><span class="pt" style="background:${pc}22;color:${pc};font-size:9px">${pkn}</span></td><td><span class="smry tlink" title="${(f.summary||'').replace(/"/g,'&quot;')}">${f.summary||'—'}</span></td><td><span class="dot ${cat==='enc'?'d-e':'d-p'}"></span><span class="badge ${sBadge(sn)}">${sn}</span></td><td><span class="prio-d ${prioC(f.priority?.name)}"></span>${f.priority?.name||'—'}</td><td>${est||'<span class="na">—</span>'}</td><td>${spent||'<span class="na">—</span>'}</td><td>${prog}</td><td>${fmtDate(eta)?'~'+fmtDate(eta):'<span class="na">—</span>'}${isI&&idle!==null?`<span class="idle-tag">⏸${idle}d</span>`:''}</td><td>${age!==null?age+'d':'—'}</td></tr>`;
   }).join('')+'</tbody></table></div>';
 }
 
@@ -712,7 +895,7 @@ function renderDireccion(users,iss,idle,encN,porN,thr){
   let html=`<div class="rdir-container"><div class="rdir-header"><div><div class="rdir-title">📊 Reporte de Actividades Semanales</div><div class="rdir-subtitle">grupobepa · Semana ${week}</div></div><div class="rdir-header-right"><div class="rdir-gen">Generado: ${today.toLocaleDateString('es-PY',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})} ${today.toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit'})}</div><button class="rdir-print-btn" onclick="window.print()">🖨️ Imprimir / PDF</button></div></div>
   <div class="rdir-section"><div class="rdir-section-title">📈 Resumen Ejecutivo</div><div class="rdir-kpi-row"><div class="rdir-kpi"><div class="rdir-kpi-v">${users.length}</div><div class="rdir-kpi-l">Colaboradores activos</div></div><div class="rdir-kpi enc"><div class="rdir-kpi-v">${encN}</div><div class="rdir-kpi-l">Tareas en curso</div></div><div class="rdir-kpi por"><div class="rdir-kpi-v">${porN}</div><div class="rdir-kpi-l">Tareas por hacer</div></div><div class="rdir-kpi"><div class="rdir-kpi-v">${projs.length}</div><div class="rdir-kpi-l">Proyectos activos</div></div><div class="rdir-kpi ${idle.length?'danger':'ok'}"><div class="rdir-kpi-v">${idle.length}</div><div class="rdir-kpi-l">Tareas sin actividad (&gt;${thr}d)</div></div>${totE?`<div class="rdir-kpi pur"><div class="rdir-kpi-v" style="font-size:16px">${fmtS(totS)||'—'}</div><div class="rdir-kpi-l">Tiempo registrado</div></div>`:''}${totR?`<div class="rdir-kpi" style="border-left-color:var(--green)"><div class="rdir-kpi-v" style="font-size:16px">${fmtS(totR)||'—'}</div><div class="rdir-kpi-l">Tiempo restante estimado</div></div>`:''}
   </div></div>`;
-  if(idle.length){html+=`<div class="rdir-section rdir-alert"><div class="rdir-section-title" style="color:#974F0C;border-bottom-color:#FFD166">⚠️ Alerta: Tareas Sin Actividad (&gt; ${thr} días)</div><div class="rdir-alert-grid">${idle.map(i=>{const d=dAgo(i.fields.updated),sn=i.fields.status?.name||'';return`<div class="rdir-alert-item"><a class="ik" href="${BASE}${i.key}" target="_blank">${i.key}</a><span class="badge ${sBadge(sn)}">${sn}</span><span style="font-size:11px;color:var(--g700);flex:1">${(i.fields.summary||'').slice(0,60)}${(i.fields.summary||'').length>60?'…':''}</span><span style="font-size:11px;color:var(--g500)">${aName(respUser(i.fields))||'—'}</span><span class="idle-tag">⏸ ${d}d sin cambios</span></div>`;}).join('')}</div></div>`;}
+  if(idle.length){html+=`<div class="rdir-section rdir-alert"><div class="rdir-section-title" style="color:#974F0C;border-bottom-color:#FFD166">⚠️ Alerta: Tareas Sin Actividad (&gt; ${thr} días)</div><div class="rdir-alert-grid">${idle.map(i=>{const d=dAgo(i.fields.updated),sn=i.fields.status?.name||'';return`<div class="rdir-alert-item"><a class="ik" style="cursor:pointer" onclick="openTicket('${i.key}')">${i.key}</a><span class="badge ${sBadge(sn)}">${sn}</span><span style="font-size:11px;color:var(--g700);flex:1">${(i.fields.summary||'').slice(0,60)}${(i.fields.summary||'').length>60?'…':''}</span><span style="font-size:11px;color:var(--g500)">${aName(respUser(i.fields))||'—'}</span><span class="idle-tag">⏸ ${d}d sin cambios</span></div>`;}).join('')}</div></div>`;}
   html+=`<div class="rdir-section"><div class="rdir-section-title">👥 Actividad por Colaborador</div>`;
   users.forEach((u,i)=>{
     const col=COLORS[i%COLORS.length];
@@ -728,8 +911,8 @@ function renderDireccion(users,iss,idle,encN,porN,thr){
     const projsU=[...new Set(activeTasks.map(t=>pName(t.fields.project)).filter(Boolean))].join(', ');
     html+=`<div class="rdir-user-block"><div class="rdir-user-header" style="border-left-color:${col}"><div class="av" style="background:${col};width:36px;height:36px;font-size:13px;flex-shrink:0">${ini(u.name)}</div><div style="flex:1;min-width:120px"><div style="font-size:14px;font-weight:700;color:var(--g900)">${u.name}</div><div style="font-size:11px;color:var(--g500);margin-top:2px">📁 ${projsU}</div></div><div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center"><div class="rdir-user-stat" style="color:var(--blue)"><strong>${eT.length}</strong> en curso</div><div class="rdir-user-stat" style="color:var(--orange)"><strong>${pT.length}</strong> por hacer</div>${idU.length?`<div class="rdir-user-stat" style="color:var(--red)"><strong>${idU.length}</strong> sin actividad</div>`:''}${tEU?`<div class="rdir-user-stat" style="color:var(--g500)">Est: <strong>${fmtS(tEU)||'—'}</strong></div>`:''}${tSU?`<div class="rdir-user-stat" style="color:var(--g500)">Usado: <strong>${fmtS(tSU)||'—'}</strong></div>`:''}${tRU?`<div class="rdir-user-stat" style="color:var(--g500)">Resta: <strong>${fmtS(tRU)||'—'}</strong></div>`:''}${etaStr?`<div class="rdir-user-stat ${etaCls}">📅 ETA: <strong>${etaStr}</strong></div>`:''}
     </div></div>`;
-    if(eT.length){html+=`<div class="rdir-task-section-h" style="color:var(--blue);background:var(--blue-l)"><span class="dot d-e"></span> Tareas En Curso (${eT.length})</div><div style="overflow-x:auto"><table class="rdir-table"><thead><tr><th>Issue</th><th>Proyecto</th><th>Tarea</th><th>Estado</th><th>Progreso</th><th>Tiempo usado</th><th>Tiempo restante</th><th>ETA estimada</th></tr></thead><tbody>`;eT.forEach(t=>{const f=t.fields,sn=f.status?.name||'';const est=f.timeoriginalestimate,sp=f.timespent,rem=f.timeestimate;const pct=(est&&sp)?Math.min(100,Math.round(sp/est*100)):null;const eta2=etaDate(rem);const isI=(dAgo(f.updated)||0)>=thr;html+=`<tr class="${isI?'idle':''}"><td><a class="ik" href="${BASE}${t.key}" target="_blank">${t.key}</a></td><td style="font-size:10px;color:var(--g500);white-space:nowrap">${pName(f.project)}</td><td><span style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block" title="${(f.summary||'').replace(/"/g,'&quot;')}">${f.summary||'—'}</span></td><td><span class="badge ${sBadge(sn)}">${sn}</span>${isI?`<span class="idle-tag">⏸${dAgo(f.updated)}d</span>`:''}</td><td>${pct!==null?`<div class="pb-w"><div class="pb" style="width:65px"><div class="pb-f" style="width:${pct}%;background:${pct>80?'#DE350B':pct>50?'#FF8B00':'#00875A'}"></div></div><span class="pb-p">${pct}%</span></div>`:'<span class="na">—</span>'}</td><td style="white-space:nowrap">${fmtS(sp)||'<span class="na">—</span>'}</td><td style="white-space:nowrap">${fmtS(rem)||'<span class="na">—</span>'}</td><td style="white-space:nowrap">${fmtDate(eta2)?'~'+fmtDate(eta2):'<span class="na">—</span>'}</td></tr>`;});html+=`</tbody></table></div>`;}
-    if(pT.length){html+=`<div class="rdir-task-section-h" style="color:var(--orange);background:var(--orange-l)"><span class="dot d-p"></span> Tareas Por Hacer (${pT.length})</div><div style="overflow-x:auto"><table class="rdir-table"><thead><tr><th>Issue</th><th>Proyecto</th><th>Tarea</th><th>Estado</th><th>Prioridad</th><th>Estimado</th><th>Antigüedad</th></tr></thead><tbody>`;pT.forEach(t=>{const f=t.fields,sn=f.status?.name||'';const age=dAgo(f.created);html+=`<tr><td><a class="ik" href="${BASE}${t.key}" target="_blank">${t.key}</a></td><td style="font-size:10px;color:var(--g500);white-space:nowrap">${pName(f.project)}</td><td><span style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block" title="${(f.summary||'').replace(/"/g,'&quot;')}">${f.summary||'—'}</span></td><td><span class="badge ${sBadge(sn)}">${sn}</span></td><td><span class="prio-d ${prioC(f.priority?.name)}"></span>${f.priority?.name||'—'}</td><td style="white-space:nowrap">${fmtS(f.timeoriginalestimate)||'<span class="na">—</span>'}</td><td style="white-space:nowrap;${age!==null&&age>14?'color:var(--red);font-weight:700':''}">${age!==null?age+'d':'—'}</td></tr>`;});html+=`</tbody></table></div>`;}
+    if(eT.length){html+=`<div class="rdir-task-section-h" style="color:var(--blue);background:var(--blue-l)"><span class="dot d-e"></span> Tareas En Curso (${eT.length})</div><div style="overflow-x:auto"><table class="rdir-table"><thead><tr><th>Issue</th><th>Proyecto</th><th>Tarea</th><th>Estado</th><th>Progreso</th><th>Tiempo usado</th><th>Tiempo restante</th><th>ETA estimada</th></tr></thead><tbody>`;eT.forEach(t=>{const f=t.fields,sn=f.status?.name||'';const est=f.timeoriginalestimate,sp=f.timespent,rem=f.timeestimate;const pct=(est&&sp)?Math.min(100,Math.round(sp/est*100)):null;const eta2=etaDate(rem);const isI=(dAgo(f.updated)||0)>=thr;html+=`<tr class="${isI?'idle':''}" style="cursor:pointer" onclick="openTicket('${t.key}')"><td><a class="ik" style="cursor:pointer" onclick="event.stopPropagation();openTicket('${t.key}')">${t.key}</a></td><td style="font-size:10px;color:var(--g500);white-space:nowrap">${pName(f.project)}</td><td><span class="tlink" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block" title="${(f.summary||'').replace(/"/g,'&quot;')}">${f.summary||'—'}</span></td><td><span class="badge ${sBadge(sn)}">${sn}</span>${isI?`<span class="idle-tag">⏸${dAgo(f.updated)}d</span>`:''}</td><td>${pct!==null?`<div class="pb-w"><div class="pb" style="width:65px"><div class="pb-f" style="width:${pct}%;background:${pct>80?'#DE350B':pct>50?'#FF8B00':'#00875A'}"></div></div><span class="pb-p">${pct}%</span></div>`:'<span class="na">—</span>'}</td><td style="white-space:nowrap">${fmtS(sp)||'<span class="na">—</span>'}</td><td style="white-space:nowrap">${fmtS(rem)||'<span class="na">—</span>'}</td><td style="white-space:nowrap">${fmtDate(eta2)?'~'+fmtDate(eta2):'<span class="na">—</span>'}</td></tr>`;});html+=`</tbody></table></div>`;}
+    if(pT.length){html+=`<div class="rdir-task-section-h" style="color:var(--orange);background:var(--orange-l)"><span class="dot d-p"></span> Tareas Por Hacer (${pT.length})</div><div style="overflow-x:auto"><table class="rdir-table"><thead><tr><th>Issue</th><th>Proyecto</th><th>Tarea</th><th>Estado</th><th>Prioridad</th><th>Estimado</th><th>Antigüedad</th></tr></thead><tbody>`;pT.forEach(t=>{const f=t.fields,sn=f.status?.name||'';const age=dAgo(f.created);html+=`<tr style="cursor:pointer" onclick="openTicket('${t.key}')"><td><a class="ik" style="cursor:pointer" onclick="event.stopPropagation();openTicket('${t.key}')">${t.key}</a></td><td style="font-size:10px;color:var(--g500);white-space:nowrap">${pName(f.project)}</td><td><span class="tlink" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block" title="${(f.summary||'').replace(/"/g,'&quot;')}">${f.summary||'—'}</span></td><td><span class="badge ${sBadge(sn)}">${sn}</span></td><td><span class="prio-d ${prioC(f.priority?.name)}"></span>${f.priority?.name||'—'}</td><td style="white-space:nowrap">${fmtS(f.timeoriginalestimate)||'<span class="na">—</span>'}</td><td style="white-space:nowrap;${age!==null&&age>14?'color:var(--red);font-weight:700':''}">${age!==null?age+'d':'—'}</td></tr>`;});html+=`</tbody></table></div>`;}
     html+=`</div>`;
   });
   html+=`</div><div class="rdir-section"><div class="rdir-section-title">📁 Estado por Proyecto</div><div style="overflow-x:auto"><table class="rdir-table"><thead><tr><th>Proyecto</th><th>En Curso</th><th>Por Hacer</th><th>Total</th><th>Colaboradores</th><th>Tiempo registrado</th><th>Tiempo restante</th><th>Avance</th></tr></thead><tbody>`;
@@ -744,7 +927,119 @@ function showErr(m){const e=document.getElementById('err');e.textContent=m;e.sty
 
 // ── INIT ───────────────────────────────────────────────────────────────────────
 loadData();
+
+// ── TICKET MODAL ──────────────────────────────────────────────────────────────
+const ISSUE_API='/api/jira-issue';
+const _MC=['#0052CC','#00875A','#FF8B00','#6554C0','#DE350B','#00B8D9','#36B37E','#FF5630','#6B778C','#8777D9'];
+const _SC={'blue-gray':'#6B778C',yellow:'#FF8B00',green:'#00875A',blue:'#0052CC',red:'#DE350B'};
+const _FN={status:'Estado',assignee:'Asignado',priority:'Prioridad',summary:'Título',description:'Descripción',comment:'Comentario',timespent:'Tiempo usado',timeestimate:'Tiempo restante',timeoriginalestimate:'Tiempo estimado',labels:'Etiquetas',resolution:'Resolución'};
+let _mOpen=false;
+
+function _mc(n){let h=0;for(let i=0;i<(n||'').length;i++)h=(h*31+n.charCodeAt(i))&0x7FFFFFFF;return _MC[h%_MC.length];}
+function _mi(n){const p=(n||'').trim().split(/\s+/);return((p[0]||'')[0]||'')+((p[1]||'')[0]||'');}
+function _mdt(iso){if(!iso)return'—';return new Date(iso).toLocaleString('es-PY',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+
+function openTicket(key){
+  const ov=document.getElementById('tmodal-ov');
+  ov.classList.add('open');
+  document.getElementById('tmodal-loading').style.display='flex';
+  document.getElementById('tmodal-cnt').style.display='none';
+  _mOpen=true;
+  fetch(`${ISSUE_API}?key=${encodeURIComponent(key)}`)
+    .then(r=>r.json()).then(d=>_renderModal(d)).catch(e=>_renderModalErr(e.message||'Error al cargar'));
+}
+function closeModal(){document.getElementById('tmodal-ov').classList.remove('open');_mOpen=false;}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&_mOpen)closeModal();});
+
+function _renderModal({issue,comments}){
+  const f=issue.fields,rf=issue.renderedFields||{},cl=issue.changelog?.histories||[];
+  document.getElementById('tm-key').textContent=issue.key;
+  document.getElementById('tm-key').href=BASE+issue.key;
+  document.getElementById('tm-title').textContent=f.summary||'—';
+  const sc=_SC[f.status?.statusCategory?.colorName]||'#6B778C';
+  const assignee=f.assignee,reporter=f.reporter,priority=f.priority;
+  const lbls=f.labels?.length?`<div class="tmeta-field"><div class="tmeta-label">Etiquetas</div><div class="tmeta-val">${f.labels.map(l=>`<span style="background:var(--g100);color:var(--g500);border-radius:3px;font-size:10px;padding:2px 6px;font-weight:600">${l}</span>`).join('')}</div></div>`:'';
+  const timeBlock=f.timeoriginalestimate?`<div class="tmeta-field"><div class="tmeta-label">Tiempo</div><div class="tmeta-val" style="flex-direction:column;align-items:flex-start;gap:2px">${f.timeoriginalestimate?`<span>⏱ Est: ${fmtS(f.timeoriginalestimate)}</span>`:''} ${f.timespent?`<span>✅ Usado: ${fmtS(f.timespent)}</span>`:''} ${f.timeestimate?`<span>⏳ Resta: ${fmtS(f.timeestimate)}</span>`:''}</div></div>`:'';
+  document.getElementById('tmodal-side-cnt').innerHTML=`
+    <div class="tmeta-field"><div class="tmeta-label">Estado</div><div class="tmeta-val"><span class="tmodal-status" style="background:${sc}22;color:${sc}">${f.status?.name||'—'}</span></div></div>
+    <div class="tmeta-field"><div class="tmeta-label">Tipo</div><div class="tmeta-val">${f.issuetype?.name||'—'}</div></div>
+    <div class="tmeta-field"><div class="tmeta-label">Prioridad</div><div class="tmeta-val"><span class="prio-d ${prioC(priority?.name)}"></span>${priority?.name||'—'}</div></div>
+    <div class="tmeta-field"><div class="tmeta-label">Asignado a</div><div class="tmeta-val">${assignee?`<div class="tmeta-av" style="background:${_mc(assignee.displayName)}">${_mi(assignee.displayName)}</div>${assignee.displayName}`:'<span class="tmodal-empty-note">Sin asignar</span>'}</div></div>
+    <div class="tmeta-field"><div class="tmeta-label">Reportado por</div><div class="tmeta-val">${reporter?`<div class="tmeta-av" style="background:${_mc(reporter.displayName)}">${_mi(reporter.displayName)}</div>${reporter.displayName}`:'—'}</div></div>
+    <div class="tmeta-field"><div class="tmeta-label">Proyecto</div><div class="tmeta-val">${f.project?.name||'—'}</div></div>
+    ${lbls}${timeBlock}
+    <div class="tmeta-field"><div class="tmeta-label">Creado</div><div class="tmeta-val">${_mdt(f.created)}</div></div>
+    <div class="tmeta-field"><div class="tmeta-label">Actualizado</div><div class="tmeta-val">${_mdt(f.updated)}</div></div>`;
+  const descHtml=rf.description||'<span class="tmodal-empty-note">Sin descripción</span>';
+  let cmHtml='';
+  if(comments?.length){
+    cmHtml=`<div class="tmodal-section"><div class="tmodal-section-title">💬 Comentarios (${comments.length})</div>`+
+      comments.map(c=>{const a=c.author?.displayName||'?';return`<div class="cm-item"><div class="cm-hdr"><div class="cm-av" style="background:${_mc(a)}">${_mi(a)}</div><div class="cm-who">${a}</div><div class="cm-when">${_mdt(c.created)}</div></div><div class="cm-body">${c.renderedBody||_adf(c.body)||'<em>—</em>'}</div></div>`;}).join('')+'</div>';
+  }
+  const RELF=new Set(['status','assignee','priority','summary','timespent','timeestimate','timeoriginalestimate','labels','resolution','description']);
+  const chItems=cl.flatMap(h=>h.items.filter(it=>RELF.has(it.field)).map(it=>({who:h.author?.displayName||'?',when:h.created,field:it.field,from:it.fromString,to:it.toString}))).reverse();
+  let clHtml='';
+  if(chItems.length){
+    clHtml=`<div class="tmodal-section"><div class="tmodal-section-title">📋 Historial de cambios</div>`+
+      chItems.slice(0,60).map(c=>`<div class="cl-item"><div><span class="cl-who">${c.who}</span><span class="cl-when">${_mdt(c.when)}</span></div><div class="cl-change"><span class="cl-field">${_FN[c.field]||c.field}</span>:${c.from?`<span class="cl-from cl-arrow">${c.from}</span>→`:''}<span class="cl-to cl-arrow">${c.to||'<em>vacío</em>'}</span></div></div>`).join('')+'</div>';
+  }
+  document.getElementById('tmodal-main').innerHTML=`<div class="tmodal-section"><div class="tmodal-section-title">📄 Descripción</div><div class="tmodal-desc">${descHtml}</div></div>${cmHtml}${clHtml}`;
+  document.getElementById('tmodal-loading').style.display='none';
+  document.getElementById('tmodal-cnt').style.display='';
+}
+
+function _renderModalErr(msg){
+  document.getElementById('tmodal-loading').style.display='none';
+  document.getElementById('tmodal-cnt').innerHTML=`<div style="padding:40px;text-align:center;color:var(--red);font-size:13px">⚠️ ${msg}</div>`;
+  document.getElementById('tmodal-cnt').style.display='';
+}
+
+function _adf(n){
+  if(!n)return'';if(typeof n==='string')return n;
+  const c=(n.content||[]).map(_adf).join('');
+  switch(n.type){
+    case 'doc':return c;
+    case 'paragraph':return`<p>${c||'&nbsp;'}</p>`;
+    case 'text':{let t=(n.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');for(const m of(n.marks||[])){if(m.type==='strong')t=`<strong>${t}</strong>`;else if(m.type==='em')t=`<em>${t}</em>`;else if(m.type==='code')t=`<code>${t}</code>`;else if(m.type==='link')t=`<a href="${m.attrs?.href||'#'}" target="_blank">${t}</a>`;else if(m.type==='underline')t=`<u>${t}</u>`;else if(m.type==='strike')t=`<s>${t}</s>`;}return t;}
+    case 'bulletList':return`<ul>${c}</ul>`;
+    case 'orderedList':return`<ol>${c}</ol>`;
+    case 'listItem':return`<li>${c}</li>`;
+    case 'codeBlock':return`<pre><code>${c}</code></pre>`;
+    case 'heading':return`<h${n.attrs?.level||3}>${c}</h${n.attrs?.level||3}>`;
+    case 'blockquote':return`<blockquote>${c}</blockquote>`;
+    case 'hardBreak':return'<br>';
+    case 'rule':return'<hr>';
+    case 'mention':return`<strong>@${n.attrs?.text||'?'}</strong>`;
+    case 'emoji':return n.attrs?.shortName||'';
+    case 'inlineCard':return`<a href="${n.attrs?.url||'#'}" target="_blank">${n.attrs?.url||''}</a>`;
+    case 'table':return`<table style="border-collapse:collapse;font-size:11px;margin:8px 0">${c}</table>`;
+    case 'tableRow':return`<tr>${c}</tr>`;
+    case 'tableHeader':return`<th style="border:1px solid var(--g100);padding:4px 8px;background:var(--g100);font-weight:700">${c}</th>`;
+    case 'tableCell':return`<td style="border:1px solid var(--g100);padding:4px 8px">${c}</td>`;
+    default:return c||'';
+  }
+}
 </script>
+
+<!-- ═══ TICKET MODAL ═══ -->
+<div class="tmodal-overlay" id="tmodal-ov" onclick="if(event.target===this)closeModal()">
+  <div class="tmodal">
+    <div class="tmodal-loading" id="tmodal-loading">
+      <div class="tmodal-spin"></div>
+      Cargando detalle del ticket...
+    </div>
+    <div id="tmodal-cnt" style="display:none">
+      <div class="tmodal-hdr">
+        <a class="tmodal-key" id="tm-key" href="#" target="_blank">—</a>
+        <div class="tmodal-title" id="tm-title">—</div>
+        <button class="tmodal-close" onclick="closeModal()">✕ Cerrar</button>
+      </div>
+      <div class="tmodal-body">
+        <div class="tmodal-main" id="tmodal-main"></div>
+        <div class="tmodal-side" id="tmodal-side-cnt"></div>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
- 
