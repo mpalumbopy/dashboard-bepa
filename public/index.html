@@ -928,6 +928,24 @@ function showErr(m){const e=document.getElementById('err');e.textContent=m;e.sty
 // ── INIT ───────────────────────────────────────────────────────────────────────
 loadData();
 
+// ── AUTO-REFRESH cada 60 segundos ─────────────────────────────────────────────
+(function(){
+  const INTERVAL = 60;
+  let remaining = INTERVAL;
+  const cd = document.createElement('span');
+  cd.id = 'auto-cd';
+  cd.style.cssText = 'font-size:11px;color:var(--g400);margin-left:8px';
+  document.getElementById('btnR')?.after(cd);
+  setInterval(() => {
+    remaining--;
+    if(cd) cd.textContent = `↻ ${remaining}s`;
+    if(remaining <= 0){
+      remaining = INTERVAL;
+      if(!_mOpen) loadData();
+    }
+  }, 1000);
+})();
+
 // ── TICKET MODAL ──────────────────────────────────────────────────────────────
 const ISSUE_API='/api/jira-issue';
 const _MC=['#0052CC','#00875A','#FF8B00','#6554C0','#DE350B','#00B8D9','#36B37E','#FF5630','#6B778C','#8777D9'];
