@@ -454,8 +454,8 @@ async function callJira(jql, fields, maxResults, nextPageToken){
 }
 
 // ── LOAD ───────────────────────────────────────────────────────────────────────
-async function loadData(){
-  setLoad(true);
+async function loadData(silent=false){
+  if(!silent) setLoad(true);
   try{
     let issues=[], nextPageToken=null, page=0;
     while(page < 20){
@@ -523,11 +523,12 @@ async function loadData(){
     document.getElementById('lu').textContent =
       new Date().toLocaleString('es-PY',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
     document.getElementById('wl').textContent = '📅 Semana: '+wkR();
-    setLoad(false);
+    if(!silent) setLoad(false);
     renderAll();
   }catch(e){
-    setLoad(false);
-    showErr('Error al consultar Jira:\n'+e.message);
+    if(!silent) setLoad(false);
+    if(!silent) showErr('Error al consultar Jira:\n'+e.message);
+    else console.warn('[auto-refresh] error silencioso:', e.message);
   }
 }
 function setLoadMsg(msg){const d=document.getElementById('load-msg');if(d)d.textContent=msg;}
@@ -938,10 +939,13 @@ loadData();
   document.getElementById('btnR')?.after(cd);
   setInterval(() => {
     remaining--;
-    if(cd) cd.textContent = `↻ ${remaining}s`;
     if(remaining <= 0){
       remaining = INTERVAL;
-      if(!_mOpen) loadData();
+      if(cd) cd.textContent = '↻ actualizando…';
+      if(!_mOpen) loadData(true).then(()=>{ if(cd) cd.textContent = `↻ ${remaining}s`; });
+      else if(cd) cd.textContent = `↻ ${remaining}s`;
+    } else {
+      if(cd) cd.textContent = `↻ ${remaining}s`;
     }
   }, 1000);
 })();
