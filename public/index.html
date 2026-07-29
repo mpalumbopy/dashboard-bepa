@@ -226,6 +226,46 @@ tr:hover .tlink{color:var(--blue);text-decoration:underline}
 
 @media(max-width:700px){.cards-grid{grid-template-columns:1fr}.chart-row{grid-template-columns:1fr}.ustats{gap:6px}}
 @media print{.hdr,.topbar,.pnav,.btn,.toast,.sort-bar,.tabs,.ver-btn{display:none!important}.view:not(.on){display:none!important}body{background:#fff}.rdir-print-btn{display:none!important}}
+/* ── TICKET MODAL ── */
+.tmodal-overlay{position:fixed;inset:0;background:rgba(9,30,66,.55);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:48px 16px 24px;overflow-y:auto;backdrop-filter:blur(2px)}
+.tmodal-overlay.open{display:flex}
+.tmodal{background:#fff;border-radius:10px;width:100%;max-width:920px;box-shadow:0 20px 60px rgba(9,30,66,.25);margin:auto;overflow:hidden;min-height:200px}
+.tmodal-hdr{padding:16px 22px;border-bottom:1px solid var(--g100);display:flex;align-items:flex-start;gap:12px}
+.tmodal-key{font-family:monospace;font-size:12px;font-weight:700;color:var(--blue);background:var(--blue-l);padding:4px 9px;border-radius:4px;text-decoration:none;white-space:nowrap;flex-shrink:0;align-self:center}
+.tmodal-key:hover{background:var(--blue);color:#fff}
+.tmodal-title{font-size:16px;font-weight:700;color:var(--g900);flex:1;line-height:1.4}
+.tmodal-close{background:var(--g100);border:none;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:12px;font-weight:700;color:var(--g500);flex-shrink:0;transition:background .15s;align-self:flex-start}
+.tmodal-close:hover{background:var(--g300);color:var(--g900)}
+.tmodal-body{display:grid;grid-template-columns:1fr 252px}
+.tmodal-main{padding:20px 22px;border-right:1px solid var(--g100);overflow-y:auto;max-height:72vh}
+.tmodal-side{padding:16px 18px;background:#f8f9fb;overflow-y:auto;max-height:72vh}
+.tmodal-section{margin-bottom:22px}
+.tmodal-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--g500);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--g100)}
+.tmodal-desc{font-size:13px;color:var(--g700);line-height:1.7}
+.tmodal-desc p{margin-bottom:8px}.tmodal-desc p:last-child{margin-bottom:0}
+.tmodal-desc ul,.tmodal-desc ol{margin:6px 0 6px 18px}.tmodal-desc li{margin-bottom:3px}
+.tmodal-desc code{background:var(--g100);padding:1px 5px;border-radius:3px;font-size:11px;font-family:monospace}
+.tmodal-desc pre{background:var(--g100);padding:10px 14px;border-radius:6px;overflow-x:auto;font-size:11px;margin:8px 0}
+.tmodal-desc blockquote{border-left:3px solid #DFE1E6;padding-left:12px;color:var(--g500);font-style:italic;margin:8px 0}
+.tmodal-desc a{color:var(--blue)}.tmodal-desc h1,.tmodal-desc h2,.tmodal-desc h3{font-size:14px;font-weight:700;margin:12px 0 6px}
+.tmodal-empty-note{color:var(--g300);font-size:12px;font-style:italic}
+.tmeta-field{margin-bottom:12px}
+.tmeta-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--g500);margin-bottom:3px}
+.tmeta-val{font-size:12px;color:var(--g700);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tmeta-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
+.tmodal-status{display:inline-flex;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.cm-item{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--g100)}.cm-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.cm-hdr{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.cm-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.cm-who{font-size:12px;font-weight:600;color:var(--g700)}.cm-when{font-size:10px;color:var(--g300);margin-left:auto}
+.cm-body{font-size:12px;color:var(--g700);line-height:1.65}.cm-body p{margin-bottom:5px}
+.cl-item{padding:7px 0;border-bottom:1px solid #F4F5F7}.cl-item:last-child{border-bottom:none}
+.cl-who{font-size:11px;font-weight:600;color:var(--g700)}.cl-when{font-size:10px;color:var(--g300);margin-left:5px}
+.cl-change{font-size:11px;color:var(--g500);margin-top:2px}
+.cl-field{color:var(--g700);font-weight:600}.cl-arrow{margin:0 4px}
+.cl-from{color:var(--red)}.cl-to{color:var(--green)}
+.tmodal-loading{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--g300);font-size:13px;gap:10px}
+.tmodal-spin{width:20px;height:20px;border:2px solid var(--g100);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite}
 </style>
 </head>
 <body>
@@ -836,7 +876,7 @@ function buildTable(tasks,thr){
     const pk=pKey(f.project)||'',pkn=pName(f.project)||'—',pc=pcs[pk]||'#0052CC',sn=f.status?.name||'',cat=sCat(sn);
     const prog=pct!==null?`<div class="pb-w"><div class="pb"><div class="pb-f" style="width:${pct}%;background:${pct>80?'#DE350B':pct>50?'#FF8B00':'#00875A'}"></div></div><span class="pb-p">${pct}%</span></div>`:'<span class="na">—</span>';
     const eta=etaDate(f.timeestimate);
-    return `<tr class="${isI?'idle':''}" style="cursor:pointer" onclick="window.open('${BASE}${t.key}','_blank')"><td><a class="ik" href="${BASE}${t.key}" target="_blank" onclick="event.stopPropagation()">${t.key}</a></td><td><span class="pt" style="background:${pc}22;color:${pc};font-size:9px">${pkn}</span></td><td><span class="smry tlink" title="${(f.summary||'').replace(/"/g,'&quot;')}">${f.summary||'—'}</span></td><td><span class="dot ${cat==='enc'?'d-e':'d-p'}"></span><span class="badge ${sBadge(sn)}">${sn}</span></td><td><span class="prio-d ${prioC(f.priority?.name)}"></span>${f.priority?.name||'—'}</td><td>${est||'<span class="na">—</span>'}</td><td>${spent||'<span class="na">—</span>'}</td><td>${prog}</td><td>${fmtDate(eta)?'~'+fmtDate(eta):'<span class="na">—</span>'}${isI&&idle!==null?`<span class="idle-tag">⏸${idle}d</span>`:''}</td><td>${age!==null?age+'d':'—'}</td></tr>`;
+    return `<tr class="${isI?'idle':''}" style="cursor:pointer" onclick="openTicket('${t.key}')"><td><a class="ik" href="${BASE}${t.key}" target="_blank" onclick="event.stopPropagation()">${t.key}</a></td><td><span class="pt" style="background:${pc}22;color:${pc};font-size:9px">${pkn}</span></td><td><span class="smry tlink" title="${(f.summary||'').replace(/"/g,'&quot;')}">${f.summary||'—'}</span></td><td><span class="dot ${cat==='enc'?'d-e':'d-p'}"></span><span class="badge ${sBadge(sn)}">${sn}</span></td><td><span class="prio-d ${prioC(f.priority?.name)}"></span>${f.priority?.name||'—'}</td><td>${est||'<span class="na">—</span>'}</td><td>${spent||'<span class="na">—</span>'}</td><td>${prog}</td><td>${fmtDate(eta)?'~'+fmtDate(eta):'<span class="na">—</span>'}${isI&&idle!==null?`<span class="idle-tag">⏸${idle}d</span>`:''}</td><td>${age!==null?age+'d':'—'}</td></tr>`;
   }).join('')+'</tbody></table></div>';
 }
 
@@ -871,8 +911,8 @@ function renderDireccion(users,iss,idle,encN,porN,thr){
     const projsU=[...new Set(activeTasks.map(t=>pName(t.fields.project)).filter(Boolean))].join(', ');
     html+=`<div class="rdir-user-block"><div class="rdir-user-header" style="border-left-color:${col}"><div class="av" style="background:${col};width:36px;height:36px;font-size:13px;flex-shrink:0">${ini(u.name)}</div><div style="flex:1;min-width:120px"><div style="font-size:14px;font-weight:700;color:var(--g900)">${u.name}</div><div style="font-size:11px;color:var(--g500);margin-top:2px">📁 ${projsU}</div></div><div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center"><div class="rdir-user-stat" style="color:var(--blue)"><strong>${eT.length}</strong> en curso</div><div class="rdir-user-stat" style="color:var(--orange)"><strong>${pT.length}</strong> por hacer</div>${idU.length?`<div class="rdir-user-stat" style="color:var(--red)"><strong>${idU.length}</strong> sin actividad</div>`:''}${tEU?`<div class="rdir-user-stat" style="color:var(--g500)">Est: <strong>${fmtS(tEU)||'—'}</strong></div>`:''}${tSU?`<div class="rdir-user-stat" style="color:var(--g500)">Usado: <strong>${fmtS(tSU)||'—'}</strong></div>`:''}${tRU?`<div class="rdir-user-stat" style="color:var(--g500)">Resta: <strong>${fmtS(tRU)||'—'}</strong></div>`:''}${etaStr?`<div class="rdir-user-stat ${etaCls}">📅 ETA: <strong>${etaStr}</strong></div>`:''}
     </div></div>`;
-    if(eT.length){html+=`<div class="rdir-task-section-h" style="color:var(--blue);background:var(--blue-l)"><span class="dot d-e"></span> Tareas En Curso (${eT.length})</div><div style="overflow-x:auto"><table class="rdir-table"><thead><tr><th>Issue</th><th>Proyecto</th><th>Tarea</th><th>Estado</th><th>Progreso</th><th>Tiempo usado</th><th>Tiempo restante</th><th>ETA estimada</th></tr></thead><tbody>`;eT.forEach(t=>{const f=t.fields,sn=f.status?.name||'';const est=f.timeoriginalestimate,sp=f.timespent,rem=f.timeestimate;const pct=(est&&sp)?Math.min(100,Math.round(sp/est*100)):null;const eta2=etaDate(rem);const isI=(dAgo(f.updated)||0)>=thr;html+=`<tr class="${isI?'idle':''}" style="cursor:pointer" onclick="window.open('${BASE}${t.key}','_blank')"><td><a class="ik" href="${BASE}${t.key}" target="_blank" onclick="event.stopPropagation()">${t.key}</a></td><td style="font-size:10px;color:var(--g500);white-space:nowrap">${pName(f.project)}</td><td><span class="tlink" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block" title="${(f.summary||'').replace(/"/g,'&quot;')}">${f.summary||'—'}</span></td><td><span class="badge ${sBadge(sn)}">${sn}</span>${isI?`<span class="idle-tag">⏸${dAgo(f.updated)}d</span>`:''}</td><td>${pct!==null?`<div class="pb-w"><div class="pb" style="width:65px"><div class="pb-f" style="width:${pct}%;background:${pct>80?'#DE350B':pct>50?'#FF8B00':'#00875A'}"></div></div><span class="pb-p">${pct}%</span></div>`:'<span class="na">—</span>'}</td><td style="white-space:nowrap">${fmtS(sp)||'<span class="na">—</span>'}</td><td style="white-space:nowrap">${fmtS(rem)||'<span class="na">—</span>'}</td><td style="white-space:nowrap">${fmtDate(eta2)?'~'+fmtDate(eta2):'<span class="na">—</span>'}</td></tr>`;});html+=`</tbody></table></div>`;}
-    if(pT.length){html+=`<div class="rdir-task-section-h" style="color:var(--orange);background:var(--orange-l)"><span class="dot d-p"></span> Tareas Por Hacer (${pT.length})</div><div style="overflow-x:auto"><table class="rdir-table"><thead><tr><th>Issue</th><th>Proyecto</th><th>Tarea</th><th>Estado</th><th>Prioridad</th><th>Estimado</th><th>Antigüedad</th></tr></thead><tbody>`;pT.forEach(t=>{const f=t.fields,sn=f.status?.name||'';const age=dAgo(f.created);html+=`<tr style="cursor:pointer" onclick="window.open('${BASE}${t.key}','_blank')"><td><a class="ik" href="${BASE}${t.key}" target="_blank" onclick="event.stopPropagation()">${t.key}</a></td><td style="font-size:10px;color:var(--g500);white-space:nowrap">${pName(f.project)}</td><td><span class="tlink" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block" title="${(f.summary||'').replace(/"/g,'&quot;')}">${f.summary||'—'}</span></td><td><span class="badge ${sBadge(sn)}">${sn}</span></td><td><span class="prio-d ${prioC(f.priority?.name)}"></span>${f.priority?.name||'—'}</td><td style="white-space:nowrap">${fmtS(f.timeoriginalestimate)||'<span class="na">—</span>'}</td><td style="white-space:nowrap;${age!==null&&age>14?'color:var(--red);font-weight:700':''}">${age!==null?age+'d':'—'}</td></tr>`;});html+=`</tbody></table></div>`;}
+    if(eT.length){html+=`<div class="rdir-task-section-h" style="color:var(--blue);background:var(--blue-l)"><span class="dot d-e"></span> Tareas En Curso (${eT.length})</div><div style="overflow-x:auto"><table class="rdir-table"><thead><tr><th>Issue</th><th>Proyecto</th><th>Tarea</th><th>Estado</th><th>Progreso</th><th>Tiempo usado</th><th>Tiempo restante</th><th>ETA estimada</th></tr></thead><tbody>`;eT.forEach(t=>{const f=t.fields,sn=f.status?.name||'';const est=f.timeoriginalestimate,sp=f.timespent,rem=f.timeestimate;const pct=(est&&sp)?Math.min(100,Math.round(sp/est*100)):null;const eta2=etaDate(rem);const isI=(dAgo(f.updated)||0)>=thr;html+=`<tr class="${isI?'idle':''}" style="cursor:pointer" onclick="openTicket('${t.key}')"><td><a class="ik" href="${BASE}${t.key}" target="_blank" onclick="event.stopPropagation()">${t.key}</a></td><td style="font-size:10px;color:var(--g500);white-space:nowrap">${pName(f.project)}</td><td><span class="tlink" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block" title="${(f.summary||'').replace(/"/g,'&quot;')}">${f.summary||'—'}</span></td><td><span class="badge ${sBadge(sn)}">${sn}</span>${isI?`<span class="idle-tag">⏸${dAgo(f.updated)}d</span>`:''}</td><td>${pct!==null?`<div class="pb-w"><div class="pb" style="width:65px"><div class="pb-f" style="width:${pct}%;background:${pct>80?'#DE350B':pct>50?'#FF8B00':'#00875A'}"></div></div><span class="pb-p">${pct}%</span></div>`:'<span class="na">—</span>'}</td><td style="white-space:nowrap">${fmtS(sp)||'<span class="na">—</span>'}</td><td style="white-space:nowrap">${fmtS(rem)||'<span class="na">—</span>'}</td><td style="white-space:nowrap">${fmtDate(eta2)?'~'+fmtDate(eta2):'<span class="na">—</span>'}</td></tr>`;});html+=`</tbody></table></div>`;}
+    if(pT.length){html+=`<div class="rdir-task-section-h" style="color:var(--orange);background:var(--orange-l)"><span class="dot d-p"></span> Tareas Por Hacer (${pT.length})</div><div style="overflow-x:auto"><table class="rdir-table"><thead><tr><th>Issue</th><th>Proyecto</th><th>Tarea</th><th>Estado</th><th>Prioridad</th><th>Estimado</th><th>Antigüedad</th></tr></thead><tbody>`;pT.forEach(t=>{const f=t.fields,sn=f.status?.name||'';const age=dAgo(f.created);html+=`<tr style="cursor:pointer" onclick="openTicket('${t.key}')"><td><a class="ik" href="${BASE}${t.key}" target="_blank" onclick="event.stopPropagation()">${t.key}</a></td><td style="font-size:10px;color:var(--g500);white-space:nowrap">${pName(f.project)}</td><td><span class="tlink" style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block" title="${(f.summary||'').replace(/"/g,'&quot;')}">${f.summary||'—'}</span></td><td><span class="badge ${sBadge(sn)}">${sn}</span></td><td><span class="prio-d ${prioC(f.priority?.name)}"></span>${f.priority?.name||'—'}</td><td style="white-space:nowrap">${fmtS(f.timeoriginalestimate)||'<span class="na">—</span>'}</td><td style="white-space:nowrap;${age!==null&&age>14?'color:var(--red);font-weight:700':''}">${age!==null?age+'d':'—'}</td></tr>`;});html+=`</tbody></table></div>`;}
     html+=`</div>`;
   });
   html+=`</div><div class="rdir-section"><div class="rdir-section-title">📁 Estado por Proyecto</div><div style="overflow-x:auto"><table class="rdir-table"><thead><tr><th>Proyecto</th><th>En Curso</th><th>Por Hacer</th><th>Total</th><th>Colaboradores</th><th>Tiempo registrado</th><th>Tiempo restante</th><th>Avance</th></tr></thead><tbody>`;
@@ -887,6 +927,119 @@ function showErr(m){const e=document.getElementById('err');e.textContent=m;e.sty
 
 // ── INIT ───────────────────────────────────────────────────────────────────────
 loadData();
+
+// ── TICKET MODAL ──────────────────────────────────────────────────────────────
+const ISSUE_API='/api/jira-issue';
+const _MC=['#0052CC','#00875A','#FF8B00','#6554C0','#DE350B','#00B8D9','#36B37E','#FF5630','#6B778C','#8777D9'];
+const _SC={'blue-gray':'#6B778C',yellow:'#FF8B00',green:'#00875A',blue:'#0052CC',red:'#DE350B'};
+const _FN={status:'Estado',assignee:'Asignado',priority:'Prioridad',summary:'Título',description:'Descripción',comment:'Comentario',timespent:'Tiempo usado',timeestimate:'Tiempo restante',timeoriginalestimate:'Tiempo estimado',labels:'Etiquetas',resolution:'Resolución'};
+let _mOpen=false;
+
+function _mc(n){let h=0;for(let i=0;i<(n||'').length;i++)h=(h*31+n.charCodeAt(i))&0x7FFFFFFF;return _MC[h%_MC.length];}
+function _mi(n){const p=(n||'').trim().split(/\s+/);return((p[0]||'')[0]||'')+((p[1]||'')[0]||'');}
+function _mdt(iso){if(!iso)return'—';return new Date(iso).toLocaleString('es-PY',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+
+function openTicket(key){
+  const ov=document.getElementById('tmodal-ov');
+  ov.classList.add('open');
+  document.getElementById('tmodal-loading').style.display='flex';
+  document.getElementById('tmodal-cnt').style.display='none';
+  _mOpen=true;
+  fetch(`${ISSUE_API}?key=${encodeURIComponent(key)}`)
+    .then(r=>r.json()).then(d=>_renderModal(d)).catch(e=>_renderModalErr(e.message||'Error al cargar'));
+}
+function closeModal(){document.getElementById('tmodal-ov').classList.remove('open');_mOpen=false;}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&_mOpen)closeModal();});
+
+function _renderModal({issue,comments}){
+  const f=issue.fields,rf=issue.renderedFields||{},cl=issue.changelog?.histories||[];
+  document.getElementById('tm-key').textContent=issue.key;
+  document.getElementById('tm-key').href=BASE+issue.key;
+  document.getElementById('tm-title').textContent=f.summary||'—';
+  const sc=_SC[f.status?.statusCategory?.colorName]||'#6B778C';
+  const assignee=f.assignee,reporter=f.reporter,priority=f.priority;
+  const lbls=f.labels?.length?`<div class="tmeta-field"><div class="tmeta-label">Etiquetas</div><div class="tmeta-val">${f.labels.map(l=>`<span style="background:var(--g100);color:var(--g500);border-radius:3px;font-size:10px;padding:2px 6px;font-weight:600">${l}</span>`).join('')}</div></div>`:'';
+  const timeBlock=f.timeoriginalestimate?`<div class="tmeta-field"><div class="tmeta-label">Tiempo</div><div class="tmeta-val" style="flex-direction:column;align-items:flex-start;gap:2px">${f.timeoriginalestimate?`<span>⏱ Est: ${fmtS(f.timeoriginalestimate)}</span>`:''} ${f.timespent?`<span>✅ Usado: ${fmtS(f.timespent)}</span>`:''} ${f.timeestimate?`<span>⏳ Resta: ${fmtS(f.timeestimate)}</span>`:''}</div></div>`:'';
+  document.getElementById('tmodal-side-cnt').innerHTML=`
+    <div class="tmeta-field"><div class="tmeta-label">Estado</div><div class="tmeta-val"><span class="tmodal-status" style="background:${sc}22;color:${sc}">${f.status?.name||'—'}</span></div></div>
+    <div class="tmeta-field"><div class="tmeta-label">Tipo</div><div class="tmeta-val">${f.issuetype?.name||'—'}</div></div>
+    <div class="tmeta-field"><div class="tmeta-label">Prioridad</div><div class="tmeta-val"><span class="prio-d ${prioC(priority?.name)}"></span>${priority?.name||'—'}</div></div>
+    <div class="tmeta-field"><div class="tmeta-label">Asignado a</div><div class="tmeta-val">${assignee?`<div class="tmeta-av" style="background:${_mc(assignee.displayName)}">${_mi(assignee.displayName)}</div>${assignee.displayName}`:'<span class="tmodal-empty-note">Sin asignar</span>'}</div></div>
+    <div class="tmeta-field"><div class="tmeta-label">Reportado por</div><div class="tmeta-val">${reporter?`<div class="tmeta-av" style="background:${_mc(reporter.displayName)}">${_mi(reporter.displayName)}</div>${reporter.displayName}`:'—'}</div></div>
+    <div class="tmeta-field"><div class="tmeta-label">Proyecto</div><div class="tmeta-val">${f.project?.name||'—'}</div></div>
+    ${lbls}${timeBlock}
+    <div class="tmeta-field"><div class="tmeta-label">Creado</div><div class="tmeta-val">${_mdt(f.created)}</div></div>
+    <div class="tmeta-field"><div class="tmeta-label">Actualizado</div><div class="tmeta-val">${_mdt(f.updated)}</div></div>`;
+  const descHtml=rf.description||'<span class="tmodal-empty-note">Sin descripción</span>';
+  let cmHtml='';
+  if(comments?.length){
+    cmHtml=`<div class="tmodal-section"><div class="tmodal-section-title">💬 Comentarios (${comments.length})</div>`+
+      comments.map(c=>{const a=c.author?.displayName||'?';return`<div class="cm-item"><div class="cm-hdr"><div class="cm-av" style="background:${_mc(a)}">${_mi(a)}</div><div class="cm-who">${a}</div><div class="cm-when">${_mdt(c.created)}</div></div><div class="cm-body">${c.renderedBody||_adf(c.body)||'<em>—</em>'}</div></div>`;}).join('')+'</div>';
+  }
+  const RELF=new Set(['status','assignee','priority','summary','timespent','timeestimate','timeoriginalestimate','labels','resolution','description']);
+  const chItems=cl.flatMap(h=>h.items.filter(it=>RELF.has(it.field)).map(it=>({who:h.author?.displayName||'?',when:h.created,field:it.field,from:it.fromString,to:it.toString}))).reverse();
+  let clHtml='';
+  if(chItems.length){
+    clHtml=`<div class="tmodal-section"><div class="tmodal-section-title">📋 Historial de cambios</div>`+
+      chItems.slice(0,60).map(c=>`<div class="cl-item"><div><span class="cl-who">${c.who}</span><span class="cl-when">${_mdt(c.when)}</span></div><div class="cl-change"><span class="cl-field">${_FN[c.field]||c.field}</span>:${c.from?`<span class="cl-from cl-arrow">${c.from}</span>→`:''}<span class="cl-to cl-arrow">${c.to||'<em>vacío</em>'}</span></div></div>`).join('')+'</div>';
+  }
+  document.getElementById('tmodal-main').innerHTML=`<div class="tmodal-section"><div class="tmodal-section-title">📄 Descripción</div><div class="tmodal-desc">${descHtml}</div></div>${cmHtml}${clHtml}`;
+  document.getElementById('tmodal-loading').style.display='none';
+  document.getElementById('tmodal-cnt').style.display='';
+}
+
+function _renderModalErr(msg){
+  document.getElementById('tmodal-loading').style.display='none';
+  document.getElementById('tmodal-cnt').innerHTML=`<div style="padding:40px;text-align:center;color:var(--red);font-size:13px">⚠️ ${msg}</div>`;
+  document.getElementById('tmodal-cnt').style.display='';
+}
+
+function _adf(n){
+  if(!n)return'';if(typeof n==='string')return n;
+  const c=(n.content||[]).map(_adf).join('');
+  switch(n.type){
+    case 'doc':return c;
+    case 'paragraph':return`<p>${c||'&nbsp;'}</p>`;
+    case 'text':{let t=(n.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');for(const m of(n.marks||[])){if(m.type==='strong')t=`<strong>${t}</strong>`;else if(m.type==='em')t=`<em>${t}</em>`;else if(m.type==='code')t=`<code>${t}</code>`;else if(m.type==='link')t=`<a href="${m.attrs?.href||'#'}" target="_blank">${t}</a>`;else if(m.type==='underline')t=`<u>${t}</u>`;else if(m.type==='strike')t=`<s>${t}</s>`;}return t;}
+    case 'bulletList':return`<ul>${c}</ul>`;
+    case 'orderedList':return`<ol>${c}</ol>`;
+    case 'listItem':return`<li>${c}</li>`;
+    case 'codeBlock':return`<pre><code>${c}</code></pre>`;
+    case 'heading':return`<h${n.attrs?.level||3}>${c}</h${n.attrs?.level||3}>`;
+    case 'blockquote':return`<blockquote>${c}</blockquote>`;
+    case 'hardBreak':return'<br>';
+    case 'rule':return'<hr>';
+    case 'mention':return`<strong>@${n.attrs?.text||'?'}</strong>`;
+    case 'emoji':return n.attrs?.shortName||'';
+    case 'inlineCard':return`<a href="${n.attrs?.url||'#'}" target="_blank">${n.attrs?.url||''}</a>`;
+    case 'table':return`<table style="border-collapse:collapse;font-size:11px;margin:8px 0">${c}</table>`;
+    case 'tableRow':return`<tr>${c}</tr>`;
+    case 'tableHeader':return`<th style="border:1px solid var(--g100);padding:4px 8px;background:var(--g100);font-weight:700">${c}</th>`;
+    case 'tableCell':return`<td style="border:1px solid var(--g100);padding:4px 8px">${c}</td>`;
+    default:return c||'';
+  }
+}
 </script>
+
+<!-- ═══ TICKET MODAL ═══ -->
+<div class="tmodal-overlay" id="tmodal-ov" onclick="if(event.target===this)closeModal()">
+  <div class="tmodal">
+    <div class="tmodal-loading" id="tmodal-loading">
+      <div class="tmodal-spin"></div>
+      Cargando detalle del ticket...
+    </div>
+    <div id="tmodal-cnt" style="display:none">
+      <div class="tmodal-hdr">
+        <a class="tmodal-key" id="tm-key" href="#" target="_blank">—</a>
+        <div class="tmodal-title" id="tm-title">—</div>
+        <button class="tmodal-close" onclick="closeModal()">✕ Cerrar</button>
+      </div>
+      <div class="tmodal-body">
+        <div class="tmodal-main" id="tmodal-main"></div>
+        <div class="tmodal-side" id="tmodal-side-cnt"></div>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
