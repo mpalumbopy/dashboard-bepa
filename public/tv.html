@@ -128,7 +128,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
   <div class="card clickable acc-b" id="card-sop" onclick="showArea('soporte')">
     <div class="card-icon">🎧</div><div class="card-lbl">Soporte</div>
     <div class="card-num" id="n-sop">—</div><div class="card-sub">tickets activos</div>
-    <div class="card-members">Jaime · Diana · Jorge · Marcos · Leticia</div>
+    <div class="card-members">Jaime · Diana · Jorge · Marcos · Leticia · Anibal</div>
   </div>
   <div class="card clickable acc-p" id="card-dev" onclick="showArea('desarrollo')">
     <div class="card-icon">💻</div><div class="card-lbl">Desarrollo</div>
@@ -195,7 +195,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 const PROXY='https://main.dashboard-bepa.pages.dev/api/jira';
 const BASE='https://grupobepa.atlassian.net/browse/';
 const CHECK_INTERVAL=20;
-const TEAMS={soporte:['jaime','diana','jorge','marcos','leticia'],desarrollo:['kevin','daril','rodrigo','aldo','elias','gustavo','danays','blanca'],infra:['richard','fabian']};
+const TEAMS={soporte:['jaime','diana','jorge','marcos','leticia','anibal'],desarrollo:['kevin','daril','rodrigo','aldo','elias','gustavo','danays','blanca'],infra:['richard','fabian']};
 const CLOSED=new Set(['finalizado','finalizada','cancelado','cancelada','done','cerrado','cerrada','closed','resuelto','resuelta','completado','completada','completo','completa','complete','completed','terminado','terminada','cancelled','canceled','implementado','listo','lista']);
 const PAUSED=new Set(['en pausa','paused','pause','on hold','suspendido','suspendida','bloqueado','bloqueada','blocked']);
 const ENC=new Set(['en curso','in progress','in_progress','en progreso','en proceso','en desarrollo','doing','activo','activa','active','en revisión','en revision','en testing','testing','in review','reviewing','en qa','qa','in qa','análisis','analisis','analysis','planificado','planificada','planned','sprint activo','sprint activa']);
