@@ -43,6 +43,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 .acc-p{--accent:var(--p);background:linear-gradient(135deg,var(--card),rgba(168,85,247,.04))}
 .acc-g{--accent:var(--g);background:linear-gradient(135deg,var(--card),rgba(16,185,129,.04))}
 .acc-y{--accent:var(--y)}.acc-o{--accent:var(--o)}.acc-gr{--accent:var(--gr)}
+.acc-wa{--accent:#25d366;background:linear-gradient(135deg,var(--card),rgba(37,211,102,.06))}
 /* Bull Queue Section */
 .bull-section{margin-bottom:20px}
 .section-title{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.8px;margin-bottom:12px;display:flex;align-items:center;gap:12px}
@@ -142,6 +143,27 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
   </div>
 </div>
 
+<!-- WhatsApp IA -->
+<div style="margin-bottom:16px">
+  <div class="card acc-wa clickable" id="card-wa" onclick="showArea('wa')" style="display:flex;align-items:center;gap:36px;padding:20px 28px">
+    <div style="font-size:2.4rem;line-height:1">💬</div>
+    <div style="flex:1">
+      <div class="card-lbl" style="margin-bottom:10px">WhatsApp IA · Soporte</div>
+      <div style="display:flex;gap:48px;align-items:baseline">
+        <div>
+          <div class="card-num" id="n-wa" style="font-size:3.6rem">—</div>
+          <div class="card-sub">tickets abiertos</div>
+        </div>
+        <div>
+          <div class="card-num" id="n-wa-hoy" style="font-size:2.6rem;color:#25d366">—</div>
+          <div class="card-sub">ingresados hoy</div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:.72rem;color:var(--muted);text-align:right;align-self:flex-start;margin-top:4px">label: <code style="color:#25d366">claude-wa</code></div>
+  </div>
+</div>
+
 <div class="grid3">
   <div class="card stat-card acc-y">
     <div class="card-icon">📅</div><div class="card-lbl">Ingresados Hoy</div>
@@ -204,7 +226,7 @@ function getTeam(d){if(!d)return'sin-asignar';const l=d.toLowerCase().trim();for
 function dateStr(d){return d.toISOString().slice(0,10)}
 function fmtAgo(iso){if(!iso)return'—';const d=Math.floor((Date.now()-new Date(iso).getTime())/86400000);if(d===0)return'hoy';if(d===1)return'ayer';return`hace ${d}d`}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-const FIELDS=['summary','status','assignee','project','issuetype','created','updated','priority'];
+const FIELDS=['summary','status','assignee','project','issuetype','created','updated','priority','labels'];
 async function callProxy(jql,max=200,tok=null){const b={jql,fields:FIELDS,maxResults:max};if(tok)b.nextPageToken=tok;const r=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
 async function fetchAll(jql){let issues=[],token=null;do{const d=await callProxy(jql,200,token);issues=issues.concat(d.issues||[]);token=d.nextPageToken||null;if(issues.length>=1000)break}while(token);return issues}
 let activeIssues=[],activeArea=null,activeTab='all',checkTimer=null,checkIn=CHECK_INTERVAL;
@@ -256,6 +278,9 @@ async function loadData(){
     let nSin=0,nSop=0,nDev=0,nInf=0;
     for(const i of active){const t=getTeam(i.fields?.assignee?.displayName||null);if(t==='sin-asignar')nSin++;else if(t==='soporte')nSop++;else if(t==='desarrollo')nDev++;else if(t==='infra')nInf++}
     setCount('n-sin',nSin);setCount('n-sop',nSop);setCount('n-dev',nDev);setCount('n-inf',nInf);
+    const waIssues=active.filter(i=>(i.fields?.labels||[]).includes('claude-wa')&&getTeam(i.fields?.assignee?.displayName||null)==='soporte');
+    setCount('n-wa',waIssues.length);
+    setCount('n-wa-hoy',waIssues.filter(i=>(i.fields?.created||'').startsWith(todayStr)).length);
     setCount('n-hoy',mes.filter(i=>(i.fields?.created||'').startsWith(todayStr)).length);
     setCount('n-mes',mes.length);setCount('n-fin',fin.length);
     const now=new Date().toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -276,14 +301,16 @@ function startPolling(){
     if(checkIn<=0){checkIn=CHECK_INTERVAL;document.getElementById('check-status').textContent='🔄 actualizando...';loadData().then(()=>document.getElementById('check-status').textContent='● en vivo').catch(()=>document.getElementById('check-status').textContent='⚠ error')}
   },1000);
 }
-const AREA_META={'sin-asignar':{label:'Sin Asignar',accent:'#ef4444',id:'card-sin'},soporte:{label:'Soporte',accent:'#3b82f6',id:'card-sop'},desarrollo:{label:'Desarrollo',accent:'#a855f7',id:'card-dev'},infra:{label:'Infraestructura',accent:'#10b981',id:'card-inf'}};
+const AREA_META={'sin-asignar':{label:'Sin Asignar',accent:'#ef4444',id:'card-sin'},soporte:{label:'Soporte',accent:'#3b82f6',id:'card-sop'},desarrollo:{label:'Desarrollo',accent:'#a855f7',id:'card-dev'},infra:{label:'Infraestructura',accent:'#10b981',id:'card-inf'},wa:{label:'💬 WhatsApp IA',accent:'#25d366',id:'card-wa'}};
 function showArea(area){if(activeArea===area){closePanel();return}document.querySelectorAll('.card.clickable').forEach(c=>c.classList.remove('active-card'));const m=AREA_META[area];if(m)document.getElementById(m.id)?.classList.add('active-card');activeArea=area;activeTab='all';renderPanel(area,'all');document.getElementById('panel').classList.add('open');document.getElementById('panel').scrollIntoView({behavior:'smooth',block:'nearest'})}
 function closePanel(){activeArea=null;document.getElementById('panel').classList.remove('open');document.querySelectorAll('.card.clickable').forEach(c=>c.classList.remove('active-card'))}
 function renderPanel(area,tab){
   const m=AREA_META[area];if(!m)return;
   document.getElementById('panel-title').textContent=m.label+' — Tickets Activos';
   document.getElementById('panel-title').style.color=m.accent;
-  const issues=activeIssues.filter(i=>getTeam(i.fields?.assignee?.displayName||null)===area);
+  const issues=area==='wa'
+    ? activeIssues.filter(i=>(i.fields?.labels||[]).includes('claude-wa')&&getTeam(i.fields?.assignee?.displayName||null)==='soporte')
+    : activeIssues.filter(i=>getTeam(i.fields?.assignee?.displayName||null)===area);
   const cats={enc:0,por:0,pau:0,done:0};for(const i of issues)cats[sCat(i.fields?.status?.name)]++;
   const tabs=[{id:'all',cls:'t-all',lbl:'Todos',n:issues.length},{id:'enc',cls:'t-enc',lbl:'● En Curso',n:cats.enc},{id:'por',cls:'t-por',lbl:'● Por Hacer',n:cats.por},...(cats.pau?[{id:'pau',cls:'t-pau',lbl:'⏸ En Pausa',n:cats.pau}]:[]),...(cats.done?[{id:'done',cls:'t-done',lbl:'✅ Finalizadas',n:cats.done}]:[])];
   document.getElementById('panel-tabs').innerHTML=tabs.map(t=>`<span class="tab ${t.cls}${tab===t.id?' on':''}" onclick="setTab('${t.id}')">${t.lbl}<span class="tc">${t.n}</span></span>`).join('');
