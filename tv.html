@@ -160,7 +160,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
         </div>
       </div>
     </div>
-    <div style="font-size:.72rem;color:var(--muted);text-align:right;align-self:flex-start;margin-top:4px">label: <code style="color:#25d366">claude-wa</code></div>
+    <div style="font-size:.72rem;color:var(--muted);text-align:right;align-self:flex-start;margin-top:4px">proyecto: <code style="color:#25d366">CW</code></div>
   </div>
 </div>
 
@@ -278,7 +278,7 @@ async function loadData(){
     let nSin=0,nSop=0,nDev=0,nInf=0;
     for(const i of active){const t=getTeam(i.fields?.assignee?.displayName||null);if(t==='sin-asignar')nSin++;else if(t==='soporte')nSop++;else if(t==='desarrollo')nDev++;else if(t==='infra')nInf++}
     setCount('n-sin',nSin);setCount('n-sop',nSop);setCount('n-dev',nDev);setCount('n-inf',nInf);
-    const waIssues=active.filter(i=>(i.fields?.labels||[]).includes('claude-wa')&&getTeam(i.fields?.assignee?.displayName||null)==='soporte');
+    const waIssues=active.filter(i=>i.fields?.project?.key==='CW');
     setCount('n-wa',waIssues.length);
     setCount('n-wa-hoy',waIssues.filter(i=>(i.fields?.created||'').startsWith(todayStr)).length);
     setCount('n-hoy',mes.filter(i=>(i.fields?.created||'').startsWith(todayStr)).length);
@@ -309,7 +309,7 @@ function renderPanel(area,tab){
   document.getElementById('panel-title').textContent=m.label+' — Tickets Activos';
   document.getElementById('panel-title').style.color=m.accent;
   const issues=area==='wa'
-    ? activeIssues.filter(i=>(i.fields?.labels||[]).includes('claude-wa')&&getTeam(i.fields?.assignee?.displayName||null)==='soporte')
+    ? activeIssues.filter(i=>i.fields?.project?.key==='CW')
     : activeIssues.filter(i=>getTeam(i.fields?.assignee?.displayName||null)===area);
   const cats={enc:0,por:0,pau:0,done:0};for(const i of issues)cats[sCat(i.fields?.status?.name)]++;
   const tabs=[{id:'all',cls:'t-all',lbl:'Todos',n:issues.length},{id:'enc',cls:'t-enc',lbl:'● En Curso',n:cats.enc},{id:'por',cls:'t-por',lbl:'● Por Hacer',n:cats.por},...(cats.pau?[{id:'pau',cls:'t-pau',lbl:'⏸ En Pausa',n:cats.pau}]:[]),...(cats.done?[{id:'done',cls:'t-done',lbl:'✅ Finalizadas',n:cats.done}]:[])];
