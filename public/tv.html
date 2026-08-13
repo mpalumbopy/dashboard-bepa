@@ -25,7 +25,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 .hdr-right{text-align:right}
 .dot-live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gr);margin-right:6px;animation:blink 2s ease infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:16px}
+.grid4{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;margin-bottom:16px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:20px}
 .card{background:var(--card);border:2px solid var(--border);border-radius:16px;padding:24px 22px 20px;position:relative;overflow:hidden;transition:transform .18s,box-shadow .18s}
 .card.clickable{cursor:pointer}
@@ -141,26 +141,11 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
     <div class="card-num" id="n-inf">—</div><div class="card-sub">tickets activos</div>
     <div class="card-members">Richard · Fabian</div>
   </div>
-</div>
-
-<!-- WhatsApp IA -->
-<div style="margin-bottom:16px">
-  <div class="card acc-wa clickable" id="card-wa" onclick="showArea('wa')" style="display:flex;align-items:center;gap:36px;padding:20px 28px">
-    <div style="font-size:2.4rem;line-height:1">💬</div>
-    <div style="flex:1">
-      <div class="card-lbl" style="margin-bottom:10px">WhatsApp IA · Soporte</div>
-      <div style="display:flex;gap:48px;align-items:baseline">
-        <div>
-          <div class="card-num" id="n-wa" style="font-size:3.6rem">—</div>
-          <div class="card-sub">tickets abiertos</div>
-        </div>
-        <div>
-          <div class="card-num" id="n-wa-hoy" style="font-size:2.6rem;color:#25d366">—</div>
-          <div class="card-sub">ingresados hoy</div>
-        </div>
-      </div>
-    </div>
-    <div style="font-size:.72rem;color:var(--muted);text-align:right;align-self:flex-start;margin-top:4px">proyecto: <code style="color:#25d366">CW</code></div>
+  <div class="card clickable acc-wa" id="card-wa" onclick="showArea('wa')">
+    <div class="card-icon">💬</div><div class="card-lbl">WhatsApp IA</div>
+    <div class="card-num" id="n-wa">—</div><div class="card-sub">tickets abiertos</div>
+    <div style="margin-top:10px;font-size:2rem;font-weight:900;line-height:1;color:#25d366;font-variant-numeric:tabular-nums" id="n-wa-hoy">—</div>
+    <div class="card-sub">ingresados hoy</div>
   </div>
 </div>
 
