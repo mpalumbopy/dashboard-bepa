@@ -266,6 +266,27 @@ tr:hover .tlink{color:var(--blue);text-decoration:underline}
 .cl-from{color:var(--red)}.cl-to{color:var(--green)}
 .tmodal-loading{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--g300);font-size:13px;gap:10px}
 .tmodal-spin{width:20px;height:20px;border:2px solid var(--g100);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite}
+/* ── Epics view ─────────────────────────────────────────────────────────── */
+.epic-card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);margin-bottom:14px;overflow:hidden}
+.epic-hdr{display:flex;align-items:center;gap:12px;padding:13px 18px;cursor:pointer;user-select:none;transition:background .12s}
+.epic-hdr:hover{background:var(--g50)}
+.epic-key{font-family:'Courier New',monospace;font-size:11px;color:var(--blue);font-weight:700;background:var(--blue-l);padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0}
+.epic-name{font-size:13px;font-weight:700;color:var(--g900);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.epic-proj{font-size:11px;color:var(--g400);white-space:nowrap;flex-shrink:0}
+.epic-badges{display:flex;gap:5px;align-items:center;flex-shrink:0}
+.epic-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:9px;font-size:11px;font-weight:700;white-space:nowrap}
+.epic-badge.enc{background:var(--blue-l);color:var(--blue)}
+.epic-badge.por{background:var(--orange-l);color:var(--orange)}
+.epic-badge.pau{background:#f1f3f5;color:var(--g500)}
+.epic-badge.done{background:rgba(0,135,90,.1);color:var(--green)}
+.epic-badge.tot{background:var(--g100);color:var(--g700)}
+.epic-toggle{font-size:11px;color:var(--g300);flex-shrink:0;transition:transform .2s;display:inline-block}
+.epic-toggle.open{transform:rotate(180deg)}
+.epic-body{display:none;padding:0 18px 16px}
+.epic-body.open{display:block}
+.epic-color-bar{height:3px;background:var(--blue)}
+.epics-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:0 2px}
+.epics-meta{font-size:13px;font-weight:600;color:var(--g600)}
 </style>
 </head>
 <body>
@@ -378,6 +399,7 @@ tr:hover .tlink{color:var(--blue);text-decoration:underline}
   <div class="pnav-t on" id="pn-ejecutivo" onclick="setPage('ejecutivo')">👔 Ejecutivo</div>
   <div class="pnav-t" id="pn-detalle" onclick="setPage('detalle')">🔍 Detalle por usuario</div>
   <div class="pnav-t" id="pn-direccion" onclick="setPage('direccion')">📊 Reporte Dirección</div>
+  <div class="pnav-t" id="pn-epicas" onclick="setPage('epicas')">🗂 Por Épica</div>
 </div>
 
 <div id="toast" class="toast"></div>
@@ -413,6 +435,7 @@ tr:hover .tlink{color:var(--blue);text-decoration:underline}
       <div id="us"></div>
     </div>
     <div class="view" id="v-direccion"><div id="rdir"></div></div>
+    <div class="view" id="v-epicas"><div id="repicas" style="padding:4px 0"></div></div>
   </div>
 </main>
 <div class="footer" id="foot"></div>
@@ -422,7 +445,8 @@ tr:hover .tlink{color:var(--blue);text-decoration:underline}
 const BASE = "https://grupobepa.atlassian.net/browse/";
 const JQL  = "assignee is not EMPTY ORDER BY updated DESC";
 const FIELDS = ["summary","status","assignee","reporter","project","issuetype",
-                "timeoriginalestimate","timespent","timeestimate","created","updated","priority","description"];
+                "timeoriginalestimate","timespent","timeestimate","created","updated","priority","description",
+                "parent","customfield_10014"];
 const COLORS = ['#0052CC','#00875A','#6554C0','#FF5630','#FF8B00','#00B8D9',
                 '#36B37E','#FF7452','#253858','#97A0AF','#2684FF','#403294',
                 '#006644','#BF2600','#006278'];
@@ -591,7 +615,7 @@ function updateMsLabel(id){const count=msState[id].size,total=msItems[id].length
 document.addEventListener('click',e=>{if(!e.target.closest('.ms-wrap'))['proj','user','status'].forEach(x=>{const w=document.getElementById('ms-'+x+'-wrap');if(w)w.classList.remove('open');});});
 
 // ── PAGE & TAB NAV ─────────────────────────────────────────────────────────────
-function setPage(p){activePage=p;['ejecutivo','detalle','direccion'].forEach(x=>{document.getElementById('pn-'+x).classList.toggle('on',x===p);document.getElementById('v-'+x).classList.toggle('on',x===p);});if(p==='direccion')renderDireccion(_lastUsers,_lastIss,_lastIdle,_lastEncN,_lastPorN,_lastThr);}
+function setPage(p){activePage=p;['ejecutivo','detalle','direccion','epicas'].forEach(x=>{document.getElementById('pn-'+x).classList.toggle('on',x===p);document.getElementById('v-'+x).classList.toggle('on',x===p);});if(p==='direccion')renderDireccion(_lastUsers,_lastIss,_lastIdle,_lastEncN,_lastPorN,_lastThr);if(p==='epicas')renderEpics(_lastIss);}
 function setTab(t){activeTab=t;renderAll();}
 function setSort(mode){sortMode=mode;['tasks','enc','idle','eta','eff','name'].forEach(m=>{const b=document.getElementById('sb-'+m);if(b)b.classList.toggle('on',m===mode);});renderAll();}
 
@@ -747,6 +771,7 @@ function renderAll(){
   document.getElementById('uc').textContent='('+usersDetail.length+' usuarios)';
   renderUsers(usersDetail,thr);
   if(activePage==='direccion')renderDireccion(_lastUsers,iss,idle,encN,porN,thr);
+  if(activePage==='epicas')renderEpics(iss);
   document.getElementById('dash').style.display='';
   document.getElementById('foot').textContent='grupobepa.atlassian.net · '+iss.length+' tareas · '+new Date().toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit'});
 }
@@ -925,6 +950,110 @@ function renderDireccion(users,iss,idle,encN,porN,thr){
 function toggleC(h){const b=h.nextElementSibling,cv=h.querySelector('.chev'),o=b.style.display!=='none';b.style.display=o?'none':'';cv.classList.toggle('open',!o);}
 function setLoad(on){document.getElementById('load').style.display=on?'':'none';document.getElementById('dash').style.display=on?'none':'';document.getElementById('btnR').disabled=on;document.getElementById('ri').className=on?'spin':'';}
 function showErr(m){const e=document.getElementById('err');e.textContent=m;e.style.display='';}
+
+// ── EPICS VIEW ─────────────────────────────────────────────────────────────────
+function renderEpics(iss){
+  const el=document.getElementById('repicas');if(!el)return;
+  if(!iss||!iss.length){el.innerHTML='<div style="text-align:center;padding:60px;color:var(--g400)">Sin datos</div>';return;}
+
+  // Mapa de epics cargadas (issues cuyo issuetype es Epic)
+  const epicMap={};
+  iss.forEach(i=>{if((i.fields?.issuetype?.name||'').toLowerCase()==='epic')epicMap[i.key]=i.fields?.summary||i.key;});
+
+  // Obtener la epic de un issue
+  function epicOf(i){
+    const f=i.fields;
+    if(f?.parent?.fields?.issuetype?.name?.toLowerCase()==='epic')
+      return{key:f.parent.key,name:f.parent.fields?.summary||f.parent.key};
+    if(f?.customfield_10014){const k=f.customfield_10014;return{key:k,name:epicMap[k]||k};}
+    return null;
+  }
+
+  // Agrupar por epic (excluir issues que son epics en sí)
+  const byEpic={};const noEpic=[];
+  iss.forEach(i=>{
+    if((i.fields?.issuetype?.name||'').toLowerCase()==='epic')return;
+    const ep=epicOf(i);
+    if(ep){if(!byEpic[ep.key])byEpic[ep.key]={key:ep.key,name:ep.name,issues:[]};byEpic[ep.key].issues.push(i);}
+    else noEpic.push(i);
+  });
+
+  const epics=Object.values(byEpic).sort((a,b)=>{
+    const aOpen=a.issues.filter(i=>!isDone(i.fields?.status?.name)).length;
+    const bOpen=b.issues.filter(i=>!isDone(i.fields?.status?.name)).length;
+    return bOpen-aOpen;
+  });
+
+  if(!epics.length&&!noEpic.length){
+    el.innerHTML='<div style="text-align:center;padding:60px;color:var(--g400)">No se encontraron épicas en los tickets cargados.<br><small style="font-size:11px;margin-top:8px;display:block">Verificá que los tickets tengan campo Épica configurado en Jira.</small></div>';
+    return;
+  }
+
+  const totalConEpic=epics.reduce((s,e)=>s+e.issues.length,0);
+
+  function epicCardHtml(ep,idx){
+    const issues=ep.issues;
+    const encN=issues.filter(i=>sCat(i.fields?.status?.name)==='enc').length;
+    const porN=issues.filter(i=>sCat(i.fields?.status?.name)==='por').length;
+    const pausN=issues.filter(i=>sCat(i.fields?.status?.name)==='pau').length;
+    const doneN=issues.filter(i=>isDone(i.fields?.status?.name)).length;
+    const projs=[...new Set(issues.map(i=>pName(i.fields?.project)).filter(x=>x&&x!=='—'))].join(', ');
+    const isSin=ep.key==='—';
+    const id='ep-'+idx;
+    const rows=issues.map(i=>{
+      const f=i.fields,sn=f?.status?.name||'',ago=dAgo(f?.updated);
+      return`<tr style="cursor:pointer" onclick="openTicket('${i.key}')">
+        <td><a class="ik" onclick="event.stopPropagation();openTicket('${i.key}')">${i.key}</a></td>
+        <td style="max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f?.summary||'—')}</td>
+        <td><span class="badge ${sBadge(sn)}">${sn}</span></td>
+        <td style="font-size:11px;color:var(--g500);white-space:nowrap">${f?.assignee?.displayName||'<em style="color:var(--g300)">Sin asignar</em>'}</td>
+        <td style="font-size:11px;color:var(--g400);white-space:nowrap">${pName(f?.project)||'—'}</td>
+        <td style="font-size:11px;color:var(--g400);white-space:nowrap">${ago!==null?ago+'d':'—'}</td>
+      </tr>`;
+    }).join('');
+    return`<div class="epic-card">
+      <div class="epic-color-bar" style="background:${isSin?'var(--g200)':'var(--blue)'}"></div>
+      <div class="epic-hdr" onclick="toggleEpic('${id}')">
+        ${!isSin?`<span class="epic-key">${esc(ep.key)}</span>`:''}
+        <span class="epic-name" title="${esc(ep.name)}">${esc(ep.name)}</span>
+        ${projs?`<span class="epic-proj">${esc(projs)}</span>`:''}
+        <div class="epic-badges">
+          ${encN?`<span class="epic-badge enc">⚡ ${encN}</span>`:''}
+          ${porN?`<span class="epic-badge por">○ ${porN}</span>`:''}
+          ${pausN?`<span class="epic-badge pau">⏸ ${pausN}</span>`:''}
+          ${doneN?`<span class="epic-badge done">✓ ${doneN}</span>`:''}
+          <span class="epic-badge tot">${issues.length} ticket${issues.length!==1?'s':''}</span>
+        </div>
+        <span class="epic-toggle" id="${id}-arr">▼</span>
+      </div>
+      <div class="epic-body" id="${id}-body">
+        <div style="overflow-x:auto;margin-top:10px">
+          <table class="rdir-table"><thead><tr><th>Ticket</th><th>Tarea</th><th>Estado</th><th>Asignado</th><th>Proyecto</th><th>Actualizado</th></tr></thead>
+          <tbody>${rows}</tbody></table>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  let html=`<div class="epics-toolbar">
+    <div class="epics-meta">🗂 ${epics.length} épica${epics.length!==1?'s':''} · ${totalConEpic} ticket${totalConEpic!==1?'s':''} con épica${noEpic.length?` · ${noEpic.length} sin épica`:''}</div>
+    <div style="display:flex;gap:6px">
+      <button class="btn" onclick="expandAllEpics(true)" style="font-size:11px;padding:3px 10px">⬇ Expandir todo</button>
+      <button class="btn" onclick="expandAllEpics(false)" style="font-size:11px;padding:3px 10px">⬆ Colapsar todo</button>
+    </div>
+  </div>`;
+  epics.forEach((ep,i)=>{html+=epicCardHtml(ep,i);});
+  if(noEpic.length)html+=epicCardHtml({key:'—',name:'Sin épica asignada',issues:noEpic},'none');
+  el.innerHTML=html;
+}
+function toggleEpic(id){
+  const b=document.getElementById(id+'-body'),a=document.getElementById(id+'-arr');
+  if(!b)return;const open=b.classList.toggle('open');if(a)a.classList.toggle('open',open);
+}
+function expandAllEpics(open){
+  document.querySelectorAll('.epic-body').forEach(b=>b.classList.toggle('open',open));
+  document.querySelectorAll('.epic-toggle').forEach(a=>a.classList.toggle('open',open));
+}
 
 // ── INIT ───────────────────────────────────────────────────────────────────────
 loadData();
