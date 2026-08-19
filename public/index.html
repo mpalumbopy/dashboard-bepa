@@ -952,6 +952,7 @@ function setLoad(on){document.getElementById('load').style.display=on?'':'none';
 function showErr(m){const e=document.getElementById('err');e.textContent=m;e.style.display='';}
 
 // ── EPICS VIEW ─────────────────────────────────────────────────────────────────
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 function renderEpics(iss){
   const el=document.getElementById('repicas');if(!el)return;
   if(!iss||!iss.length){el.innerHTML='<div style="text-align:center;padding:60px;color:var(--g400)">Sin datos</div>';return;}
