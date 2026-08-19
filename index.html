@@ -285,11 +285,17 @@ tr:hover .tlink{color:var(--blue);text-decoration:underline}
 .epic-body{display:none;padding:0 18px 16px}
 .epic-body.open{display:block}
 .epic-color-bar{height:3px;background:var(--blue)}
-.epic-progress{padding:6px 18px 10px;display:flex;align-items:center;gap:10px}
-.epic-progress-bar{flex:1;height:7px;background:var(--g100);border-radius:4px;overflow:hidden}
-.epic-progress-fill{height:100%;border-radius:4px;transition:width .4s}
-.epic-progress-pct{font-size:12px;font-weight:800;color:var(--g600);white-space:nowrap;min-width:42px;text-align:right}
-.epic-progress-lbl{font-size:11px;color:var(--g400);white-space:nowrap}
+.epic-chart-area{display:flex;align-items:center;gap:16px;padding:10px 18px 14px;flex-wrap:wrap}
+.epic-donut{flex-shrink:0}
+.epic-stat-list{flex:1;min-width:160px;display:flex;flex-direction:column;gap:5px;justify-content:center}
+.epic-sl-row{display:flex;align-items:center;gap:6px}
+.esl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.esl-lbl{font-size:11px;color:var(--g600);width:74px;flex-shrink:0}
+.esl-bar{flex:1;height:6px;background:var(--g100);border-radius:3px;overflow:hidden;min-width:60px}
+.esl-fill{height:100%;border-radius:3px;transition:width .5s}
+.esl-n{font-size:11px;font-weight:700;color:var(--g700);min-width:22px;text-align:right}
+.epic-stacked{display:flex;height:5px;border-radius:3px;overflow:hidden;margin:0 18px 12px;background:var(--g100)}
+.esb-fill{height:100%;transition:width .5s}
 .epics-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:0 2px}
 .epics-meta{font-size:13px;font-weight:600;color:var(--g600)}
 </style>
@@ -997,17 +1003,27 @@ function renderEpics(iss){
 
   const totalConEpic=epics.reduce((s,e)=>s+e.issues.length,0);
 
+  function donutSvg(enc,por,pau,done,total){
+    const r=30,cx=40,cy=40,sw=11,C=2*Math.PI*r;
+    if(!total)return`<svg width="80" height="80"><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="${sw}"/><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="800" fill="#94a3b8">0%</text></svg>`;
+    const segs=[{n:done,c:'#22c55e'},{n:enc,c:'#3b82f6'},{n:por,c:'#f97316'},{n:pau,c:'#94a3b8'}];
+    let off=0,paths='';
+    segs.forEach(s=>{if(!s.n)return;const d=(s.n/total)*C;paths+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.c}" stroke-width="${sw}" stroke-dasharray="${d.toFixed(2)} ${(C-d).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;off+=d;});
+    const pct=Math.round((done/total)*100);
+    return`<svg width="80" height="80" viewBox="0 0 80 80"><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="${sw}"/>${paths}<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="900" fill="#1e293b">${pct}%</text></svg>`;
+  }
   function epicCardHtml(ep,idx){
-    const issues=ep.issues;
+    const issues=ep.issues,total=issues.length;
     const encN=issues.filter(i=>sCat(i.fields?.status?.name)==='enc').length;
     const porN=issues.filter(i=>sCat(i.fields?.status?.name)==='por').length;
     const pausN=issues.filter(i=>sCat(i.fields?.status?.name)==='pau').length;
     const doneN=issues.filter(i=>isDone(i.fields?.status?.name)).length;
-    const pct=issues.length?Math.round((doneN/issues.length)*100):0;
-    const barCol=pct>=80?'var(--green)':pct>=40?'var(--blue)':'var(--orange)';
     const projs=[...new Set(issues.map(i=>pName(i.fields?.project)).filter(x=>x&&x!=='—'))].join(', ');
     const isSin=ep.key==='—';
     const id='ep-'+idx;
+    const pct=s=>total?Math.round((s/total)*100):0;
+    const stackedBar=`<div class="epic-stacked"><div class="esb-fill" style="width:${pct(encN)}%;background:#3b82f6"></div><div class="esb-fill" style="width:${pct(porN)}%;background:#f97316"></div><div class="esb-fill" style="width:${pct(pausN)}%;background:#94a3b8"></div><div class="esb-fill" style="width:${pct(doneN)}%;background:#22c55e"></div></div>`;
+    function slRow(n,color,lbl){if(!n)return'';return`<div class="epic-sl-row"><span class="esl-dot" style="background:${color}"></span><span class="esl-lbl">${lbl}</span><div class="esl-bar"><div class="esl-fill" style="width:${pct(n)}%;background:${color}"></div></div><span class="esl-n">${n}</span></div>`;}
     const rows=issues.map(i=>{
       const f=i.fields,sn=f?.status?.name||'',ago=dAgo(f?.updated);
       return`<tr style="cursor:pointer" onclick="openTicket('${i.key}')">
@@ -1020,33 +1036,33 @@ function renderEpics(iss){
       </tr>`;
     }).join('');
     return`<div class="epic-card">
-      <div class="epic-color-bar" style="background:${isSin?'var(--g200)':'var(--blue)'}"></div>
+      <div class="epic-color-bar" style="background:${isSin?'#94a3b8':'#3b82f6'}"></div>
       <div class="epic-hdr" onclick="toggleEpic('${id}')">
         ${!isSin?`<span class="epic-key">${esc(ep.key)}</span>`:''}
         <span class="epic-name" title="${esc(ep.name)}">${esc(ep.name)}</span>
         ${projs?`<span class="epic-proj">${esc(projs)}</span>`:''}
-        <div class="epic-badges">
-          ${encN?`<span class="epic-badge enc">⚡ ${encN}</span>`:''}
-          ${porN?`<span class="epic-badge por">○ ${porN}</span>`:''}
-          ${pausN?`<span class="epic-badge pau">⏸ ${pausN}</span>`:''}
-          ${doneN?`<span class="epic-badge done">✓ ${doneN}</span>`:''}
-          <span class="epic-badge tot">${issues.length} ticket${issues.length!==1?'s':''}</span>
-        </div>
+        <span class="epic-badge tot">${total} ticket${total!==1?'s':''}</span>
         <span class="epic-toggle" id="${id}-arr">▼</span>
       </div>
-      <div class="epic-progress">
-        <div class="epic-progress-bar"><div class="epic-progress-fill" style="width:${pct}%;background:${barCol}"></div></div>
-        <div class="epic-progress-pct">${pct}%</div>
-        <div class="epic-progress-lbl">${doneN} de ${issues.length}</div>
+      <div class="epic-chart-area">
+        <div class="epic-donut">${donutSvg(encN,porN,pausN,doneN,total)}</div>
+        <div class="epic-stat-list">
+          ${slRow(encN,'#3b82f6','⚡ En curso')}
+          ${slRow(porN,'#f97316','○ Por hacer')}
+          ${slRow(pausN,'#94a3b8','⏸ Pausado')}
+          ${slRow(doneN,'#22c55e','✓ Completado')}
+        </div>
       </div>
+      ${stackedBar}
       <div class="epic-body" id="${id}-body">
-        <div style="overflow-x:auto;margin-top:10px">
+        <div style="overflow-x:auto;margin-top:6px;padding:0 18px 14px">
           <table class="rdir-table"><thead><tr><th>Ticket</th><th>Tarea</th><th>Estado</th><th>Asignado</th><th>Proyecto</th><th>Actualizado</th></tr></thead>
           <tbody>${rows}</tbody></table>
         </div>
       </div>
     </div>`;
   }
+
 
   let html=`<div class="epics-toolbar">
     <div class="epics-meta">🗂 ${epics.length} épica${epics.length!==1?'s':''} · ${totalConEpic} ticket${totalConEpic!==1?'s':''} con épica${noEpic.length?` · ${noEpic.length} sin épica`:''}</div>
