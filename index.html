@@ -285,6 +285,11 @@ tr:hover .tlink{color:var(--blue);text-decoration:underline}
 .epic-body{display:none;padding:0 18px 16px}
 .epic-body.open{display:block}
 .epic-color-bar{height:3px;background:var(--blue)}
+.epic-progress{padding:6px 18px 10px;display:flex;align-items:center;gap:10px}
+.epic-progress-bar{flex:1;height:7px;background:var(--g100);border-radius:4px;overflow:hidden}
+.epic-progress-fill{height:100%;border-radius:4px;transition:width .4s}
+.epic-progress-pct{font-size:12px;font-weight:800;color:var(--g600);white-space:nowrap;min-width:42px;text-align:right}
+.epic-progress-lbl{font-size:11px;color:var(--g400);white-space:nowrap}
 .epics-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:0 2px}
 .epics-meta{font-size:13px;font-weight:600;color:var(--g600)}
 </style>
@@ -998,6 +1003,8 @@ function renderEpics(iss){
     const porN=issues.filter(i=>sCat(i.fields?.status?.name)==='por').length;
     const pausN=issues.filter(i=>sCat(i.fields?.status?.name)==='pau').length;
     const doneN=issues.filter(i=>isDone(i.fields?.status?.name)).length;
+    const pct=issues.length?Math.round((doneN/issues.length)*100):0;
+    const barCol=pct>=80?'var(--green)':pct>=40?'var(--blue)':'var(--orange)';
     const projs=[...new Set(issues.map(i=>pName(i.fields?.project)).filter(x=>x&&x!=='—'))].join(', ');
     const isSin=ep.key==='—';
     const id='ep-'+idx;
@@ -1026,6 +1033,11 @@ function renderEpics(iss){
           <span class="epic-badge tot">${issues.length} ticket${issues.length!==1?'s':''}</span>
         </div>
         <span class="epic-toggle" id="${id}-arr">▼</span>
+      </div>
+      <div class="epic-progress">
+        <div class="epic-progress-bar"><div class="epic-progress-fill" style="width:${pct}%;background:${barCol}"></div></div>
+        <div class="epic-progress-pct">${pct}%</div>
+        <div class="epic-progress-lbl">${doneN} de ${issues.length}</div>
       </div>
       <div class="epic-body" id="${id}-body">
         <div style="overflow-x:auto;margin-top:10px">
