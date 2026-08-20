@@ -108,6 +108,22 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 .sifen-alert-icon{font-size:1.15rem;flex-shrink:0}
 .sifen-alert-txt{font-size:.83rem;font-weight:800;color:#f87171;letter-spacing:.4px;line-height:1.3}
 @keyframes sifen-pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5);border-color:#ef4444}50%{box-shadow:0 0 0 7px rgba(239,68,68,0);border-color:#f97316}}
+
+.sop-section{margin:0 0 18px;background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px 22px}
+.sop-section-title{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.sop-row{display:flex;align-items:center;gap:14px;padding:5px 0;border-bottom:1px solid var(--border)}
+.sop-row:last-child{border-bottom:none}
+.sop-name{font-size:1rem;font-weight:800;color:var(--text);width:80px;flex-shrink:0}
+.sop-bar-wrap{flex:1;height:16px;background:#1e2535;border-radius:8px;overflow:hidden;display:flex;min-width:80px}
+.sop-bar-enc{height:100%;background:#3b82f6;transition:width .6s ease}
+.sop-bar-por{height:100%;background:#f97316;transition:width .6s ease}
+.sop-bar-pau{height:100%;background:#64748b;transition:width .6s ease}
+.sop-total{font-size:1.5rem;font-weight:900;color:var(--text);width:42px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums;line-height:1}
+.sop-badges{display:flex;gap:5px;flex-shrink:0;min-width:130px}
+.sop-badge{font-size:.8rem;font-weight:700;padding:2px 8px;border-radius:6px;white-space:nowrap}
+.sop-badge.enc{background:rgba(59,130,246,.18);color:#60a5fa}
+.sop-badge.por{background:rgba(249,115,22,.18);color:#fb923c}
+.sop-badge.pau{background:rgba(100,116,139,.2);color:#94a3b8}
 </style>
 </head>
 <body>
@@ -151,6 +167,12 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
     <div style="margin-top:10px;font-size:2rem;font-weight:900;line-height:1;color:#25d366;font-variant-numeric:tabular-nums" id="n-wa-hoy">—</div>
     <div class="card-sub">ingresados hoy</div>
   </div>
+</div>
+
+
+<div class="sop-section">
+  <div class="sop-section-title">🎧 &nbsp;Carga de Trabajo · Soporte</div>
+  <div id="sop-rank"></div>
 </div>
 
 <div class="grid3">
@@ -231,6 +253,46 @@ const Q_LABELS={
   RetornoDocumentoCore:'Retorno Doc. Core',envioEventoCore:'Envío Evento Core',
   consultaEventoCore:'Consulta Evento Core',RetornoEventoCore:'Retorno Evento Core'
 };
+
+function renderSoporteRank(issues){
+  const el=document.getElementById('sop-rank');if(!el)return;
+  const userMap={};
+  for(const name of TEAMS.soporte){
+    userMap[name]={name,enc:0,por:0,pau:0,total:0,disp:''};
+  }
+  for(const i of issues){
+    const d=i.fields?.assignee?.displayName||'';
+    const key=TEAMS.soporte.find(n=>d.toLowerCase().startsWith(n));
+    if(!key)continue;
+    const cat=sCat(i.fields?.status?.name);
+    if(cat==='enc')userMap[key].enc++;
+    else if(cat==='por')userMap[key].por++;
+    else if(cat==='pau')userMap[key].pau++;
+    userMap[key].total++;
+    if(!userMap[key].disp)userMap[key].disp=d.split(' ')[0];
+  }
+  const users=Object.values(userMap).sort((a,b)=>b.total-a.total);
+  const maxT=users.reduce((m,u)=>Math.max(m,u.total),1);
+  el.innerHTML=users.map(u=>{
+    const pEnc=Math.round(u.enc/maxT*100),pPor=Math.round(u.por/maxT*100),pPau=Math.round(u.pau/maxT*100);
+    const nm=u.disp||u.name.charAt(0).toUpperCase()+u.name.slice(1);
+    return`<div class="sop-row">
+      <div class="sop-name">${esc(nm)}</div>
+      <div class="sop-bar-wrap">
+        <div class="sop-bar-enc" style="width:${pEnc}%"></div>
+        <div class="sop-bar-por" style="width:${pPor}%"></div>
+        <div class="sop-bar-pau" style="width:${pPau}%"></div>
+      </div>
+      <div class="sop-total">${u.total}</div>
+      <div class="sop-badges">
+        ${u.enc?`<span class="sop-badge enc">⚡ ${u.enc}</span>`:''}
+        ${u.por?`<span class="sop-badge por">○ ${u.por}</span>`:''}
+        ${u.pau?`<span class="sop-badge pau">⏸ ${u.pau}</span>`:''}
+        ${!u.total?`<span class="sop-badge pau">sin tickets</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
 function renderQueues(queues,cid){
   const el=document.getElementById(cid);if(!el)return;
   if(!queues||!queues.length){el.innerHTML='<div class="bull-empty">Sin datos</div>';return}
@@ -277,6 +339,7 @@ async function loadData(){
     setCount('n-wa-hoy',waIssues.filter(i=>(i.fields?.created||'').startsWith(todayStr)).length);
     setCount('n-hoy',mes.filter(i=>(i.fields?.created||'').startsWith(todayStr)).length);
     setCount('n-mes',mes.length);setCount('n-fin',fin.length);
+    renderSoporteRank(active);
     const now=new Date().toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     document.getElementById('last-upd').textContent=`Actualizado: ${now}  ·  ${active.length} tickets activos`;
     document.getElementById('foot').textContent=`grupobepa.atlassian.net  ·  Total activos: ${active.length}  ·  ${now}`;
