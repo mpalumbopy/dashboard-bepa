@@ -240,7 +240,7 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 const FIELDS=['summary','status','assignee','project','issuetype','created','updated','priority','labels'];
 async function callProxy(jql,max=200,tok=null){const b={jql,fields:FIELDS,maxResults:max};if(tok)b.nextPageToken=tok;const r=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
 async function fetchAll(jql){let issues=[],token=null;do{const d=await callProxy(jql,200,token);issues=issues.concat(d.issues||[]);token=d.nextPageToken||null;if(issues.length>=1000)break}while(token);return issues}
-let activeIssues=[],activeArea=null,activeTab='all',checkTimer=null,checkIn=CHECK_INTERVAL;
+let activeIssues=[],sinIssues=[],activeArea=null,activeTab='all',checkTimer=null,checkIn=CHECK_INTERVAL;
 const prev={};
 
 /* ── Bull Queue ─────────────────────────────────────────────────────────── */
@@ -329,10 +329,11 @@ async function loadData(){
   setLoading(true);
   try{
     const today=new Date(),todayStr=dateStr(today),ms=dateStr(new Date(today.getFullYear(),today.getMonth(),1));
-    const[active,mes,fin]=await Promise.all([fetchAll('statusCategory != Done ORDER BY updated DESC'),fetchAll(`created >= "${ms}" ORDER BY created DESC`),fetchAll(`statusCategory = Done AND updated >= "${ms}" ORDER BY updated DESC`)]);
-    activeIssues=active;
-    let nSin=0,nSop=0,nDev=0,nInf=0;
-    for(const i of active){const t=getTeam(i.fields?.assignee?.displayName||null);if(t==='sin-asignar')nSin++;else if(t==='soporte')nSop++;else if(t==='desarrollo')nDev++;else if(t==='infra')nInf++}
+    const[active,mes,fin,sinAll]=await Promise.all([fetchAll('statusCategory != Done ORDER BY updated DESC'),fetchAll(`created >= "${ms}" ORDER BY created DESC`),fetchAll(`statusCategory = Done AND updated >= "${ms}" ORDER BY updated DESC`),fetchAll('assignee is EMPTY AND statusCategory != Done ORDER BY updated DESC')]);
+    activeIssues=active;sinIssues=sinAll;
+    const nSin=sinIssues.length;
+    let nSop=0,nDev=0,nInf=0;
+    for(const i of active){const t=getTeam(i.fields?.assignee?.displayName||null);if(t==='soporte')nSop++;else if(t==='desarrollo')nDev++;else if(t==='infra')nInf++}
     setCount('n-sin',nSin);setCount('n-sop',nSop);setCount('n-dev',nDev);setCount('n-inf',nInf);
     const waIssues=active.filter(i=>i.fields?.project?.key==='CW');
     setCount('n-wa',waIssues.length);
@@ -367,6 +368,8 @@ function renderPanel(area,tab){
   document.getElementById('panel-title').style.color=m.accent;
   const issues=area==='wa'
     ? activeIssues.filter(i=>i.fields?.project?.key==='CW')
+    : area==='sin-asignar'
+    ? sinIssues
     : activeIssues.filter(i=>getTeam(i.fields?.assignee?.displayName||null)===area);
   const cats={enc:0,por:0,pau:0,done:0};for(const i of issues)cats[sCat(i.fields?.status?.name)]++;
   const tabs=[{id:'all',cls:'t-all',lbl:'Todos',n:issues.length},{id:'enc',cls:'t-enc',lbl:'● En Curso',n:cats.enc},{id:'por',cls:'t-por',lbl:'● Por Hacer',n:cats.por},...(cats.pau?[{id:'pau',cls:'t-pau',lbl:'⏸ En Pausa',n:cats.pau}]:[]),...(cats.done?[{id:'done',cls:'t-done',lbl:'✅ Finalizadas',n:cats.done}]:[])];
