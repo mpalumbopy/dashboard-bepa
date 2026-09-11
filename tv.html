@@ -230,7 +230,7 @@ const BASE='https://grupobepa.atlassian.net/browse/';
 const CHECK_INTERVAL=20;
 const TEAMS={soporte:['jaime','diana','jorge','marco','leticia','anibal'],desarrollo:['kevin','daril','rodrigo','aldo','elias','gustavo','danays','blanca'],infra:['richard','fabian']};
 const CLOSED=new Set(['finalizado','finalizada','cancelado','cancelada','done','cerrado','cerrada','closed','resuelto','resuelta','completado','completada','completo','completa','complete','completed','terminado','terminada','cancelled','canceled','implementado','listo','lista']);
-const PAUSED=new Set(['en pausa','paused','pause','on hold','suspendido','suspendida','bloqueado','bloqueada','blocked']);
+const PAUSED=new Set(['en pausa','paused','pause','on hold','suspendido','suspendida','bloqueado','bloqueada','blocked','esperando resp.del cliente','esperando respuesta del cliente','en espera respuesta del cliente']);
 const ENC=new Set(['en curso','in progress','in_progress','en progreso','en proceso','en desarrollo','doing','activo','activa','active','en revisión','en revision','en testing','testing','in review','reviewing','en qa','qa','in qa','análisis','analisis','analysis','planificado','planificada','planned','sprint activo','sprint activa']);
 function sCat(n){const l=(n||'').toLowerCase().trim();if(CLOSED.has(l))return'done';if(PAUSED.has(l))return'pau';return ENC.has(l)?'enc':'por'}
 function getTeam(d){if(!d)return'sin-asignar';const l=d.toLowerCase().trim();for(const[t,ns]of Object.entries(TEAMS)){if(ns.some(n=>l.startsWith(n)))return t}return'otro'}
@@ -265,29 +265,27 @@ function renderSoporteRank(issues){
     const key=TEAMS.soporte.find(n=>d.toLowerCase().startsWith(n));
     if(!key)continue;
     const cat=sCat(i.fields?.status?.name);
+    if(cat==='pau')continue;
     if(cat==='enc')userMap[key].enc++;
     else if(cat==='por')userMap[key].por++;
-    else if(cat==='pau')userMap[key].pau++;
     userMap[key].total++;
     if(!userMap[key].disp)userMap[key].disp=d.split(' ')[0];
   }
   const users=Object.values(userMap).sort((a,b)=>b.total-a.total);
   const maxT=users.reduce((m,u)=>Math.max(m,u.total),1);
   el.innerHTML=users.map(u=>{
-    const pEnc=Math.round(u.enc/maxT*100),pPor=Math.round(u.por/maxT*100),pPau=Math.round(u.pau/maxT*100);
+    const pEnc=Math.round(u.enc/maxT*100),pPor=Math.round(u.por/maxT*100);
     const nm=u.disp||u.name.charAt(0).toUpperCase()+u.name.slice(1);
     return`<div class="sop-row">
       <div class="sop-name">${esc(nm)}</div>
       <div class="sop-bar-wrap">
         <div class="sop-bar-enc" style="width:${pEnc}%"></div>
         <div class="sop-bar-por" style="width:${pPor}%"></div>
-        <div class="sop-bar-pau" style="width:${pPau}%"></div>
       </div>
       <div class="sop-total">${u.total}</div>
       <div class="sop-badges">
         ${u.enc?`<span class="sop-badge enc">⚡ ${u.enc}</span>`:''}
         ${u.por?`<span class="sop-badge por">○ ${u.por}</span>`:''}
-        ${u.pau?`<span class="sop-badge pau">⏸ ${u.pau}</span>`:''}
         ${!u.total?`<span class="sop-badge pau">sin tickets</span>`:''}
       </div>
     </div>`;
