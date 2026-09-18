@@ -467,9 +467,9 @@ async function loadData(){
       fetchAll(`created >= "${ms}" ORDER BY created DESC`),
       fetchAll('assignee is EMPTY AND statusCategory != Done ORDER BY updated DESC'),
       fetchCount(`created >= "${ms}"`),
-      // "changed TO Done" mide la transición exacta, no el último update
-      fetchCount(`statusCategory changed TO "Done" AFTER "${ms}"`),
-      fetchCount(`statusCategory changed TO "Done" AFTER "${todayStr}"`)
+      // resolutiondate: Jira lo setea al cerrar; no incluye tickets Done de meses anteriores
+      fetchCount(`statusCategory = Done AND resolutiondate >= "${ms}"`),
+      fetchCount(`statusCategory = Done AND resolutiondate >= "${todayStr}"`)
     ]);
     activeIssues=active;sinIssues=sinAll;
     const nSin=sinIssues.length;
