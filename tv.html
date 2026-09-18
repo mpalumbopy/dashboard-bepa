@@ -124,6 +124,26 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 .sop-badge.enc{background:rgba(59,130,246,.18);color:#60a5fa}
 .sop-badge.por{background:rgba(249,115,22,.18);color:#fb923c}
 .sop-badge.pau{background:rgba(100,116,139,.2);color:#94a3b8}
+.grid4col{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:20px}
+.bull-sem-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.bull-sem-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px}
+.sem-hdr{display:flex;align-items:center;gap:14px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.sem-light{width:46px;height:46px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:900;color:#fff}
+.sem-g{background:radial-gradient(circle at 35% 35%,#4ade80,#16a34a);box-shadow:0 0 18px rgba(34,197,94,.5)}
+.sem-y{background:radial-gradient(circle at 35% 35%,#fde68a,#ca8a04);box-shadow:0 0 18px rgba(245,158,11,.5)}
+.sem-r{background:radial-gradient(circle at 35% 35%,#f87171,#dc2626);animation:sem-pulse 1s ease infinite}
+.sem-u{background:var(--dim)}
+@keyframes sem-pulse{0%,100%{box-shadow:0 0 18px rgba(239,68,68,.4)}50%{box-shadow:0 0 36px rgba(239,68,68,.95)}}
+.sem-info{flex:1;min-width:0}
+.sem-nm{font-size:1rem;font-weight:800;color:var(--text)}
+.sem-st{font-size:.8rem;font-weight:700;margin-top:2px}
+.sem-st-g{color:#4ade80}.sem-st-y{color:#fbbf24}.sem-st-r{color:#f87171}.sem-st-u{color:var(--muted)}
+.sem-lnk{font-size:.7rem;color:var(--muted);text-decoration:none;opacity:.6;flex-shrink:0}
+.sem-lnk:hover{opacity:1;color:var(--b)}
+.bull-chart-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin-top:14px}
+.bull-chart-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.bull-chart-ttl{font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.bull-chart-leg{display:flex;gap:14px;font-size:.73rem;color:var(--muted);align-items:center}
 </style>
 </head>
 <body>
@@ -175,7 +195,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
   <div id="sop-rank"></div>
 </div>
 
-<div class="grid3">
+<div class="grid4col">
   <div class="card stat-card acc-y">
     <div class="card-icon">📅</div><div class="card-lbl">Ingresados Hoy</div>
     <div class="card-num" id="n-hoy">—</div>
@@ -188,28 +208,29 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
     <div class="card-icon">✅</div><div class="card-lbl">Finalizados en el Mes</div>
     <div class="card-num" id="n-fin">—</div>
   </div>
+  <div class="card stat-card" style="--accent:#06b6d4;background:linear-gradient(135deg,var(--card),rgba(6,182,212,.04))">
+    <div class="card-icon">🎯</div><div class="card-lbl">Cerrados Hoy</div>
+    <div class="card-num" id="n-fin-hoy">—</div>
+  </div>
 </div>
 
 <!-- Cola de Trabajos · Futura100 -->
 <div class="bull-section">
   <div class="section-title">⚙️ &nbsp;Cola de Trabajos · Futura100</div>
-  <div class="bull-grid">
-    <div class="bull-card">
-      <div class="bull-card-hdr">
-        <div class="bull-dot" style="background:#3b82f6"></div>
-        <div class="bull-card-name">Core</div>
-        <a class="bull-card-link" href="https://core-monitor.futura100.com.py/admin/trabajos" target="_blank">↗ ver dashboard</a>
+  <div class="bull-sem-grid">
+    <div class="bull-sem-card" id="bull-core"><div class="bull-empty">Cargando...</div></div>
+    <div class="bull-sem-card" id="bull-ctrl"><div class="bull-empty">Cargando...</div></div>
+  </div>
+  <div class="bull-chart-box">
+    <div class="bull-chart-top">
+      <div class="bull-chart-ttl">📈 Tendencia · Errores en Cola</div>
+      <div class="bull-chart-leg">
+        <span><b style="display:inline-block;width:22px;height:3px;border-radius:2px;background:#3b82f6;vertical-align:middle;margin-right:4px"></b>Core</span>
+        <span><b style="display:inline-block;width:22px;height:3px;border-radius:2px;background:#a855f7;vertical-align:middle;margin-right:4px"></b>Controller</span>
       </div>
-      <div id="bull-core"><div class="bull-empty">Cargando...</div></div>
     </div>
-    <div class="bull-card">
-      <div class="bull-card-hdr">
-        <div class="bull-dot" style="background:#a855f7"></div>
-        <div class="bull-card-name">Controller</div>
-        <a class="bull-card-link" href="https://controller-monitor.futura100.com.py/admin/trabajos" target="_blank">↗ ver dashboard</a>
-      </div>
-      <div id="bull-ctrl"><div class="bull-empty">Cargando...</div></div>
-    </div>
+    <svg id="bull-trend-svg" width="100%" height="120" viewBox="0 0 900 120" preserveAspectRatio="none" style="display:block"></svg>
+    <div style="font-size:.7rem;color:var(--dim);text-align:right;margin-top:4px"><span id="bull-pts">0</span> puntos · actualiza cada 20s</div>
   </div>
 </div>
 
@@ -291,23 +312,71 @@ function renderSoporteRank(issues){
     </div>`;
   }).join('');
 }
-function renderQueues(queues,cid){
+const BULL_HK='bull_h_v2';const BULL_MAX=60;
+function getBullH(){try{return JSON.parse(localStorage.getItem(BULL_HK)||'[]')}catch{return[]}}
+function saveBullH(cQ,tQ){
+  const sum=(q,k)=>(q||[]).reduce((s,x)=>s+(x.counts[k]||0),0);
+  const h=getBullH();
+  h.push({ts:Date.now(),c:{f:sum(cQ,'failed'),a:sum(cQ,'active'),w:sum(cQ,'waiting')},t:{f:sum(tQ,'failed'),a:sum(tQ,'active'),w:sum(tQ,'waiting')}});
+  if(h.length>BULL_MAX)h.splice(0,h.length-BULL_MAX);
+  try{localStorage.setItem(BULL_HK,JSON.stringify(h))}catch{}
+}
+function semLevel(queues){
+  const f=(queues||[]).reduce((s,q)=>s+(q.counts?.failed||0),0);
+  if(f>20)return'r';if(f>0)return'y';return'g';
+}
+function renderSemCard(queues,cid,label,url,color){
   const el=document.getElementById(cid);if(!el)return;
-  if(!queues||!queues.length){el.innerHTML='<div class="bull-empty">Sin datos</div>';return}
-  let alertHtml='';
-  if(cid==='bull-core'){
-    const sifenAlert=queues.some(q=>['envioSifen','consultaSifen'].includes(q.name)&&(q.counts.failed||0)>20);
-    if(sifenAlert)alertHtml=`<div class="sifen-alert"><span class="sifen-alert-icon">⚠️</span><span class="sifen-alert-txt">Intermitencia activa de SIFEN</span></div>`;
-  }
-  el.innerHTML=alertHtml+queues.map(q=>{
-    const c=q.counts,label=Q_LABELS[q.name]||q.name;
+  if(!queues){el.innerHTML='<div class="bull-empty" style="color:var(--r)">Error al cargar</div>';return}
+  const lvl=semLevel(queues);
+  const icons={g:'✓',y:'⚠',r:'✕'};
+  const msgs={g:'Operando normalmente',y:'Errores detectados',r:'Incidente activo'};
+  const scls={g:'sem-st-g',y:'sem-st-y',r:'sem-st-r'};
+  const totalFailed=queues.reduce((s,q)=>s+(q.counts?.failed||0),0);
+  const sifenAlert=cid==='bull-core'&&queues.some(q=>['envioSifen','consultaSifen'].includes(q.name)&&(q.counts.failed||0)>20);
+  const alertHtml=sifenAlert?`<div class="sifen-alert"><span class="sifen-alert-icon">⚠️</span><span class="sifen-alert-txt">Intermitencia activa de SIFEN</span></div>`:'';
+  const qRows=queues.map(q=>{
+    const c=q.counts,lbl=Q_LABELS[q.name]||q.name;
     let badges='';
     if(c.active>0)badges+=`<span class="qb qb-act">⚡ ${c.active}</span>`;
     if(c.waiting>0)badges+=`<span class="qb qb-wait">⏳ ${c.waiting}</span>`;
     if(c.failed>0)badges+=`<span class="qb qb-err">✗ ${c.failed}</span>`;
-    if(!badges)badges=`<span class="qb qb-ok">✓ ${(c.completed||0).toLocaleString('es')}</span>`;
-    return`<div class="q-row"><div class="q-name">${label}</div><div class="q-badges">${badges}</div></div>`;
+    if(!badges)badges=`<span class="qb qb-ok">✓</span>`;
+    return`<div class="q-row"><div class="q-name">${lbl}</div><div class="q-badges">${badges}</div></div>`;
   }).join('');
+  el.innerHTML=`${alertHtml}<div class="sem-hdr">
+    <div class="sem-light sem-${lvl}">${icons[lvl]}</div>
+    <div class="sem-info"><div class="sem-nm" style="color:${color}">${label}</div><div class="sem-st ${scls[lvl]}">${msgs[lvl]}${totalFailed?` · ${totalFailed} errores`:''}</div></div>
+    <a class="sem-lnk" href="${url}" target="_blank">↗ dashboard</a>
+  </div><div class="sem-queues">${qRows}</div>`;
+}
+function renderBullChart(){
+  const svg=document.getElementById('bull-trend-svg');if(!svg)return;
+  const h=getBullH();
+  const pts=document.getElementById('bull-pts');if(pts)pts.textContent=h.length;
+  if(h.length<2){
+    svg.innerHTML='<text x="450" y="65" text-anchor="middle" fill="#3a4a66" font-size="13" font-family="Segoe UI,Arial,sans-serif">Acumulando datos... se llena con cada actualización (20s)</text>';
+    return;
+  }
+  const W=900,H=120,pl=34,pr=12,pt=10,pb=18;
+  const iW=W-pl-pr,iH=H-pt-pb;
+  const cf=h.map(p=>p.c.f),tf=h.map(p=>p.t.f);
+  const maxF=Math.max(1,...cf,...tf);
+  const n=h.length;
+  const px=i=>pl+i/(n-1)*iW;
+  const py=v=>pt+iH-(v/maxF)*iH;
+  const path=(arr,clr,fill)=>{
+    const d=arr.map((v,i)=>`${i?'L':'M'}${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ');
+    const area=`${d} L${px(n-1).toFixed(1)},${py(0).toFixed(1)} L${px(0).toFixed(1)},${py(0).toFixed(1)} Z`;
+    return`<path d="${area}" fill="${fill}" opacity=".1"/><path d="${d}" fill="none" stroke="${clr}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  };
+  const lastDot=(arr,clr)=>{
+    const i=n-1,v=arr[i],cx=px(i).toFixed(1),cy=py(v).toFixed(1);
+    return`<circle cx="${cx}" cy="${cy}" r="4.5" fill="${clr}"/><text x="${(+cx-6).toFixed(1)}" y="${(+cy-8).toFixed(1)}" fill="${clr}" font-size="11" font-weight="bold" font-family="Segoe UI,Arial,sans-serif" text-anchor="middle">${v}</text>`;
+  };
+  const ticks=maxF>0?[0,Math.round(maxF/2),maxF]:[];
+  const yAx=ticks.map(v=>`<line x1="${pl}" y1="${py(v).toFixed(1)}" x2="${W-pr}" y2="${py(v).toFixed(1)}" stroke="#1e2d47" stroke-width="1"/><text x="${pl-4}" y="${(py(v)+4).toFixed(1)}" text-anchor="end" fill="#3a4a66" font-size="10" font-family="Segoe UI,Arial,sans-serif">${v}</text>`).join('');
+  svg.innerHTML=yAx+path(cf,'#3b82f6','#3b82f6')+path(tf,'#a855f7','#a855f7')+lastDot(cf,'#60a5fa')+lastDot(tf,'#c084fc');
 }
 async function loadBullData(){
   try{
@@ -315,10 +384,12 @@ async function loadBullData(){
       fetch('https://main.dashboard-bepa.pages.dev/api/bull-core').then(r=>r.json()),
       fetch('https://main.dashboard-bepa.pages.dev/api/bull-controller').then(r=>r.json())
     ]);
-    if(cr.status==='fulfilled')renderQueues(cr.value.queues,'bull-core');
-    else document.getElementById('bull-core').innerHTML='<div class="bull-empty" style="color:var(--r)">Error al cargar</div>';
-    if(ctr.status==='fulfilled')renderQueues(ctr.value.queues,'bull-ctrl');
-    else document.getElementById('bull-ctrl').innerHTML='<div class="bull-empty" style="color:var(--r)">Error al cargar</div>';
+    const cQ=cr.status==='fulfilled'?cr.value.queues:null;
+    const tQ=ctr.status==='fulfilled'?ctr.value.queues:null;
+    if(cQ&&tQ)saveBullH(cQ,tQ);
+    renderSemCard(cQ,'bull-core','Bull Core','https://main.dashboard-bepa.pages.dev/bull-core','#3b82f6');
+    renderSemCard(tQ,'bull-ctrl','Bull Controller','https://main.dashboard-bepa.pages.dev/bull-controller','#a855f7');
+    renderBullChart();
   }catch(e){console.error('Bull error:',e)}
 }
 
@@ -338,6 +409,7 @@ async function loadData(){
     setCount('n-wa-hoy',waIssues.filter(i=>(i.fields?.created||'').startsWith(todayStr)).length);
     setCount('n-hoy',mes.filter(i=>(i.fields?.created||'').startsWith(todayStr)).length);
     setCount('n-mes',mes.length);setCount('n-fin',fin.length);
+    setCount('n-fin-hoy',fin.filter(i=>(i.fields?.updated||'').startsWith(todayStr)).length);
     renderSoporteRank(active);
     const now=new Date().toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     document.getElementById('last-upd').textContent=`Actualizado: ${now}  ·  ${active.length} tickets activos`;
