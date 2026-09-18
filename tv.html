@@ -462,13 +462,14 @@ async function loadData(){
   setLoading(true);
   try{
     const today=new Date(),todayStr=dateStr(today),ms=dateStr(new Date(today.getFullYear(),today.getMonth(),1));
-    const[active,mes,fin,sinAll,totalMes,totalFin]=await Promise.all([
+    const[active,mes,sinAll,totalMes,totalFin,totalFinHoy]=await Promise.all([
       fetchAll('statusCategory != Done ORDER BY updated DESC'),
       fetchAll(`created >= "${ms}" ORDER BY created DESC`),
-      fetchAll(`statusCategory = Done AND updated >= "${ms}" ORDER BY updated DESC`),
       fetchAll('assignee is EMPTY AND statusCategory != Done ORDER BY updated DESC'),
       fetchCount(`created >= "${ms}"`),
-      fetchCount(`statusCategory = Done AND updated >= "${ms}"`)
+      // "changed TO Done" mide la transición exacta, no el último update
+      fetchCount(`statusCategory changed TO "Done" AFTER "${ms}"`),
+      fetchCount(`statusCategory changed TO "Done" AFTER "${todayStr}"`)
     ]);
     activeIssues=active;sinIssues=sinAll;
     const nSin=sinIssues.length;
@@ -481,8 +482,8 @@ async function loadData(){
     // n-hoy: ORDER BY created DESC → los de hoy están primero en mes[], OK con el cap 1000
     setCount('n-hoy',mes.filter(i=>(i.fields?.created||'').startsWith(todayStr)).length);
     setCount('n-mes',totalMes);   // ← fetchCount: sin tope de 1000
-    setCount('n-fin',totalFin);   // ← fetchCount: sin tope de 1000
-    setCount('n-fin-hoy',fin.filter(i=>(i.fields?.updated||'').startsWith(todayStr)).length);
+    setCount('n-fin',totalFin);   // ← "changed TO Done" solo tickets cerrados este mes
+    setCount('n-fin-hoy',totalFinHoy); // ← tickets cerrados HOY exacto
     renderSoporteRank(active);
     const now=new Date().toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     document.getElementById('last-upd').textContent=`Actualizado: ${now}  ·  ${active.length} tickets activos`;
