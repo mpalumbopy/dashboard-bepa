@@ -272,6 +272,17 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 const FIELDS=['summary','status','assignee','project','issuetype','created','updated','priority','labels'];
 async function callProxy(jql,max=200,tok=null){const b={jql,fields:FIELDS,maxResults:max};if(tok)b.nextPageToken=tok;const r=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
 async function fetchAll(jql){let issues=[],token=null;do{const d=await callProxy(jql,200,token);issues=issues.concat(d.issues||[]);token=d.nextPageToken||null;if(issues.length>=1000)break}while(token);return issues}
+async function fetchCount(jql){
+  try{
+    const d=await callProxy(jql,1,null);
+    // API clásica devuelve d.total; cursor-based no lo tiene
+    if(typeof d.total==='number')return d.total;
+    // Fallback: paginar sin tope solo para contar
+    let n=(d.issues||[]).length,tok=d.nextPageToken||null;
+    while(tok){const p=await callProxy(jql,200,tok);n+=(p.issues||[]).length;tok=p.nextPageToken||null}
+    return n;
+  }catch{return 0}
+}
 let activeIssues=[],sinIssues=[],activeArea=null,activeTab='all',checkTimer=null,checkIn=CHECK_INTERVAL;
 const prev={};
 
@@ -451,7 +462,14 @@ async function loadData(){
   setLoading(true);
   try{
     const today=new Date(),todayStr=dateStr(today),ms=dateStr(new Date(today.getFullYear(),today.getMonth(),1));
-    const[active,mes,fin,sinAll]=await Promise.all([fetchAll('statusCategory != Done ORDER BY updated DESC'),fetchAll(`created >= "${ms}" ORDER BY created DESC`),fetchAll(`statusCategory = Done AND updated >= "${ms}" ORDER BY updated DESC`),fetchAll('assignee is EMPTY AND statusCategory != Done ORDER BY updated DESC')]);
+    const[active,mes,fin,sinAll,totalMes,totalFin]=await Promise.all([
+      fetchAll('statusCategory != Done ORDER BY updated DESC'),
+      fetchAll(`created >= "${ms}" ORDER BY created DESC`),
+      fetchAll(`statusCategory = Done AND updated >= "${ms}" ORDER BY updated DESC`),
+      fetchAll('assignee is EMPTY AND statusCategory != Done ORDER BY updated DESC'),
+      fetchCount(`created >= "${ms}"`),
+      fetchCount(`statusCategory = Done AND updated >= "${ms}"`)
+    ]);
     activeIssues=active;sinIssues=sinAll;
     const nSin=sinIssues.length;
     let nSop=0,nDev=0,nInf=0;
@@ -460,8 +478,10 @@ async function loadData(){
     const waIssues=active.filter(i=>i.fields?.project?.key==='CW');
     setCount('n-wa',waIssues.length);
     setCount('n-wa-hoy',waIssues.filter(i=>(i.fields?.created||'').startsWith(todayStr)).length);
+    // n-hoy: ORDER BY created DESC → los de hoy están primero en mes[], OK con el cap 1000
     setCount('n-hoy',mes.filter(i=>(i.fields?.created||'').startsWith(todayStr)).length);
-    setCount('n-mes',mes.length);setCount('n-fin',fin.length);
+    setCount('n-mes',totalMes);   // ← fetchCount: sin tope de 1000
+    setCount('n-fin',totalFin);   // ← fetchCount: sin tope de 1000
     setCount('n-fin-hoy',fin.filter(i=>(i.fields?.updated||'').startsWith(todayStr)).length);
     renderSoporteRank(active);
     const now=new Date().toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
