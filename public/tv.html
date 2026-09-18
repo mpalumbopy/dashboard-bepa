@@ -353,7 +353,14 @@ function renderTopology(cQ,tQ){
     return`<rect x="${x}" y="${y}" width="24" height="24" rx="4" fill="${sf(f)}" stroke="${clr}" stroke-width="1.2"><title>${lbl} · err:${f} act:${a} wait:${w}</title></rect>${f>0?`<text x="${x+12}" y="${y+15}" text-anchor="middle" font-size="9" font-weight="700" fill="${clr}" font-family="Segoe UI,Arial,sans-serif">${f}</text>`:a>0?`<circle cx="${x+12}" cy="${y+12}" r="3" fill="#60a5fa"><animate attributeName="opacity" values="1;.3;1" dur="1.1s" repeatCount="indefinite"/></circle>`:`<line x1="${x+7}" y1="${y+12}" x2="${x+17}" y2="${y+12}" stroke="${clr}" stroke-width="1.5" opacity=".4"/>`}`;
   };
   const cgs=(cQ||[]).slice(0,9).map((q,i)=>qsq(q,528+(i%3)*28,22+Math.floor(i/3)*28)).join('');
-  const tgs=(tQ||[]).slice(0,9).map((q,i)=>qsq(q,528+(i%3)*28,145+Math.floor(i/3)*28)).join('');
+  const ctrlNm={envioDocumentoCore:'Env.Doc.',consultaDocumentoCore:'Con.Doc.',RetornoDocumentoCore:'Ret.Doc.',envioEventoCore:'Env.Ev.',consultaEventoCore:'Con.Ev.',RetornoEventoCore:'Ret.Ev.'};
+  const tgs=(tQ||[]).slice(0,6).map((q,i)=>{
+    const col=i%2,row=Math.floor(i/2),x=528+col*104,y=148+row*26;
+    const f=q.counts?.failed||0,a=q.counts?.active||0,w=q.counts?.waiting||0;
+    const clr=sc(f),nm=ctrlNm[q.name]||(Q_LABELS[q.name]||q.name).slice(0,8);
+    const bdg=`${f>0?`<text x="${x+80}" y="${y+14}" text-anchor="end" font-size="9" font-weight="700" fill="#ef4444" font-family="Segoe UI,Arial,sans-serif">${f}</text>`:''}${a>0&&f===0?`<text x="${x+80}" y="${y+14}" text-anchor="end" font-size="8" fill="#60a5fa" font-family="Segoe UI,Arial,sans-serif">⚡${a}</text>`:''}${w>0&&f===0&&a===0?`<text x="${x+80}" y="${y+14}" text-anchor="end" font-size="8" fill="#f59e0b" font-family="Segoe UI,Arial,sans-serif">${w}</text>`:''}`;
+    return`<rect x="${x}" y="${y}" width="84" height="20" rx="3" fill="${sf(f)}" stroke="${clr}" stroke-width="1.1"/><text x="${x+5}" y="${y+13}" font-size="9" fill="${f>0?clr:'#8899bb'}" font-family="Segoe UI,Arial,sans-serif">${nm}</text>${bdg}`;
+  }).join('');
   const sifenF=(cQ||[]).filter(q=>['envioSifen','consultaSifen'].includes(q.name)).reduce((s,q)=>s+(q.counts?.failed||0),0);
   const sClr=sc(sifenF);
   svg.innerHTML=`
@@ -379,16 +386,16 @@ function renderTopology(cQ,tQ){
   <text x="380" y="179" text-anchor="middle" font-size="8" fill="${tFailed>0?tClr:'#3a4a66'}" font-family="Segoe UI,Arial,sans-serif">${tFailed>0?'errores':tActive>0?tActive+' act':'ok'}</text>
   ${aln(414,72,522,56,cClr,.8)}
   <line x1="522" y1="22" x2="522" y2="94" stroke="${cClr}" stroke-width="1" opacity=".2"/>
-  ${aln(414,158,522,157,tClr,1.0)}
-  <line x1="522" y1="145" x2="522" y2="215" stroke="${tClr}" stroke-width="1" opacity=".2"/>
+  ${aln(414,158,526,158,tClr,1.0)}
+  <line x1="526" y1="148" x2="526" y2="222" stroke="${tClr}" stroke-width="1" opacity=".2"/>
   <text x="528" y="16" font-size="8" fill="#3a4a66" font-family="Segoe UI,Arial,sans-serif" font-weight="700" letter-spacing="1.2">CORE (${(cQ||[]).length} colas)</text>
   <text x="528" y="138" font-size="8" fill="#3a4a66" font-family="Segoe UI,Arial,sans-serif" font-weight="700" letter-spacing="1.2">CONTROLLER (${(tQ||[]).length} colas)</text>
   ${cgs}
   ${tgs}
-  ${aln(614,34,708,86,sClr,.75)}
-  <polygon points="733,68 758,86 733,104 708,86" fill="${sf(sifenF)}" stroke="${sClr}" stroke-width="1.5"/>
-  <text x="733" y="83" text-anchor="middle" font-size="9" font-weight="700" fill="${sClr}" font-family="Segoe UI,Arial,sans-serif">SIFEN</text>
-  <text x="733" y="96" text-anchor="middle" font-size="9" fill="${sClr}" font-family="Segoe UI,Arial,sans-serif">${sifenF>0?'✗ '+sifenF:'✓ ok'}</text>`;
+  ${aln(614,34,742,86,sClr,.75)}
+  <polygon points="767,68 792,86 767,104 742,86" fill="${sf(sifenF)}" stroke="${sClr}" stroke-width="1.5"/>
+  <text x="767" y="83" text-anchor="middle" font-size="9" font-weight="700" fill="${sClr}" font-family="Segoe UI,Arial,sans-serif">SIFEN</text>
+  <text x="767" y="96" text-anchor="middle" font-size="9" fill="${sClr}" font-family="Segoe UI,Arial,sans-serif">${sifenF>0?'✗ '+sifenF:'✓ ok'}</text>`;
 }
 function renderBullChart(){
   const svg=document.getElementById('bull-trend-svg');if(!svg)return;
