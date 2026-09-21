@@ -148,6 +148,10 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 .bull-topo-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px}
 .bull-topo-ttl{font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
 .bull-topo-leg{display:flex;gap:12px;font-size:.7rem;color:var(--muted);align-items:center;flex-wrap:wrap}
+.bull-view-toggle{display:flex;gap:4px;flex-shrink:0}
+.bull-view-btn{background:rgba(30,45,74,.5);border:1px solid var(--border);color:var(--muted);padding:4px 13px;border-radius:7px;cursor:pointer;font-size:.73rem;font-weight:700;transition:all .15s;white-space:nowrap}
+.bull-view-btn:hover{color:var(--text);border-color:var(--dim)}
+.bull-view-btn.active{background:var(--dim);color:#fff;border-color:transparent}
 </style>
 </head>
 <body>
@@ -223,14 +227,25 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
   <div class="section-title">⚙️ &nbsp;Cola de Trabajos · Futura100</div>
   <div class="bull-topo-box">
     <div class="bull-topo-hdr">
-      <div class="bull-topo-ttl">🗺 Mapa de Servicios · Futura100</div>
-      <div class="bull-topo-leg">
-        <span style="display:flex;align-items:center;gap:4px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(34,197,94,.15);border:1px solid #22c55e"></i>OK</span>
-        <span style="display:flex;align-items:center;gap:4px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(245,158,11,.18);border:1px solid #f59e0b"></i>Advertencia</span>
-        <span style="display:flex;align-items:center;gap:4px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(239,68,68,.18);border:1px solid #ef4444"></i>Error</span>
+      <div class="bull-topo-ttl" id="bull-view-title">🗺 Mapa de Servicios · Futura100</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div class="bull-view-toggle">
+          <button id="btn-view-topo" class="bull-view-btn active" onclick="setBullView('topo')">🗺 Mapa</button>
+          <button id="btn-view-gauge" class="bull-view-btn" onclick="setBullView('gauge')">📊 Gauges</button>
+        </div>
+        <div class="bull-topo-leg" id="topo-legend">
+          <span style="display:flex;align-items:center;gap:4px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(34,197,94,.15);border:1px solid #22c55e"></i>OK</span>
+          <span style="display:flex;align-items:center;gap:4px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(245,158,11,.18);border:1px solid #f59e0b"></i>Advertencia</span>
+          <span style="display:flex;align-items:center;gap:4px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(239,68,68,.18);border:1px solid #ef4444"></i>Error</span>
+        </div>
       </div>
     </div>
-    <svg id="bull-topo-svg" width="100%" height="230" viewBox="0 0 900 230" preserveAspectRatio="xMidYMid meet" style="display:block"></svg>
+    <div id="bull-view-topo">
+      <svg id="bull-topo-svg" width="100%" height="230" viewBox="0 0 900 230" preserveAspectRatio="xMidYMid meet" style="display:block"></svg>
+    </div>
+    <div id="bull-view-gauge" style="display:none;padding:8px 0">
+      <div id="bull-gauge-grid"></div>
+    </div>
   </div>
   <div class="bull-chart-box">
     <div class="bull-chart-top">
@@ -347,6 +362,70 @@ function semLevel(queues){
   const f=(queues||[]).reduce((s,q)=>s+(q.counts?.failed||0),0);
   if(f>20)return'r';if(f>0)return'y';return'g';
 }
+/* ── Bull View Toggle ────────────────────────────────────────────────── */
+let lastBullData=null;
+let bullView=(()=>{try{return localStorage.getItem('bull_view')||'topo'}catch{return'topo'}})();
+function setBullView(v){
+  bullView=v;try{localStorage.setItem('bull_view',v)}catch{}
+  document.getElementById('bull-view-topo').style.display=v==='topo'?'block':'none';
+  document.getElementById('bull-view-gauge').style.display=v==='gauge'?'block':'none';
+  document.getElementById('btn-view-topo').classList.toggle('active',v==='topo');
+  document.getElementById('btn-view-gauge').classList.toggle('active',v==='gauge');
+  const leg=document.getElementById('topo-legend');if(leg)leg.style.display=v==='topo'?'flex':'none';
+  const ttl=document.getElementById('bull-view-title');if(ttl)ttl.textContent=v==='topo'?'🗺 Mapa de Servicios · Futura100':'📊 Gauges · Futura100';
+  if(lastBullData){if(v==='topo')renderTopology(lastBullData.cQ,lastBullData.tQ);else renderGauges(lastBullData.cQ,lastBullData.tQ)}
+}
+/* ── Gauges Radiales ─────────────────────────────────────────────────── */
+function renderGauges(cQ,tQ){
+  const el=document.getElementById('bull-gauge-grid');if(!el)return;
+  function p2c(cx,cy,r,deg){const rad=(deg-90)*Math.PI/180;return{x:cx+r*Math.cos(rad),y:cy+r*Math.sin(rad)}}
+  function arc(cx,cy,r,startDeg,sweepDeg){
+    if(Math.abs(sweepDeg)<0.5)return'';
+    const s=p2c(cx,cy,r,startDeg),e=p2c(cx,cy,r,startDeg+sweepDeg);
+    return`M${s.x.toFixed(2)} ${s.y.toFixed(2)} A${r} ${r} 0 ${sweepDeg>180?1:0} 1 ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
+  }
+  function gauge(q,gMax,sz=88){
+    const f=q.counts?.failed||0,a=q.counts?.active||0,w=q.counts?.waiting||0;
+    const tot=f+a+w,cx=sz/2,cy=sz*.54,r=sz*.32,sw=sz*.09;
+    const sc=gMax>0?270/gMax:0,fD=f*sc,aD=a*sc,wD=w*sc;
+    const mc=f>0?'#ef4444':a>0?'#60a5fa':w>0?'#f59e0b':'#22c55e';
+    const mv=tot>0?(f>0?f:a>0?a:w):'✓';
+    const nm=(Q_LABELS[q.name]||q.name).replace('Envío ','Env ').replace('Consulta ','Con ').replace('Retorno ','Ret ').replace('Documento','Doc').replace('Evento','Ev').replace(' Sifen','').slice(0,9);
+    const bdg=[
+      f>0?`<span style="background:rgba(239,68,68,.2);color:#f87171;padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700">✗${f}</span>`:'',
+      a>0?`<span style="background:rgba(59,130,246,.2);color:#60a5fa;padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700">⚡${a}</span>`:'',
+      w>0?`<span style="background:rgba(245,158,11,.2);color:#f59e0b;padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700">⏳${w}</span>`:'',
+    ].filter(Boolean).join('');
+    return`<div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px">
+      <svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}">
+        <path d="${arc(cx,cy,r,135,270)}" fill="none" stroke="#1a2535" stroke-width="${sw}" stroke-linecap="round"/>
+        ${fD>.5?`<path d="${arc(cx,cy,r,135,fD)}" fill="none" stroke="#ef4444" stroke-width="${sw}" stroke-linecap="round"/>`:''}
+        ${aD>.5?`<path d="${arc(cx,cy,r,135+fD,aD)}" fill="none" stroke="#60a5fa" stroke-width="${sw}" stroke-linecap="round"/>`:''}
+        ${wD>.5?`<path d="${arc(cx,cy,r,135+fD+aD,wD)}" fill="none" stroke="#f59e0b" stroke-width="${sw}" stroke-linecap="round"/>`:''}
+        <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.round(sz*.2)}" font-weight="900" fill="${mc}" font-family="Segoe UI,Arial,sans-serif">${mv}</text>
+        <text x="${cx}" y="${(cy+sz*.22).toFixed(0)}" text-anchor="middle" font-size="${Math.round(sz*.1)}" fill="#8899bb" font-family="Segoe UI,Arial,sans-serif">${nm}</text>
+      </svg>
+      ${bdg?`<div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:center">${bdg}</div>`:''}
+    </div>`;
+  }
+  function group(queues,label,clr){
+    const gMax=Math.max(1,...(queues||[]).map(q=>(q.counts?.failed||0)+(q.counts?.active||0)+(q.counts?.waiting||0)));
+    const totFail=(queues||[]).reduce((s,q)=>s+(q.counts?.failed||0),0);
+    const dot=totFail>20?'#ef4444':totFail>0?'#f59e0b':'#22c55e';
+    return`<div style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
+        <span style="width:8px;height:8px;border-radius:50%;background:${dot};display:inline-block;flex-shrink:0"></span>
+        <span style="font-size:.72rem;font-weight:700;color:${clr};text-transform:uppercase;letter-spacing:1.1px">${label} (${(queues||[]).length} colas)</span>
+        ${totFail>0?`<span style="font-size:.7rem;color:#f87171;font-weight:700">· ${totFail} errores totales</span>`:''}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:4px">
+        ${(queues||[]).map(q=>gauge(q,gMax)).join('')}
+      </div>
+    </div>`;
+  }
+  if(!cQ&&!tQ){el.innerHTML='<div style="text-align:center;padding:20px;color:#3a4a66;font-size:.85rem">Sin datos de colas</div>';return}
+  el.innerHTML=group(cQ,'Core','#93c5fd')+group(tQ,'Controller','#c084fc');
+}
 function renderTopology(cQ,tQ){
   const svg=document.getElementById('bull-topo-svg');if(!svg)return;
   const sc=f=>f>20?'#ef4444':f>0?'#f59e0b':'#22c55e';
@@ -452,7 +531,8 @@ async function loadBullData(){
     const cQ=cr.status==='fulfilled'?cr.value.queues:null;
     const tQ=ctr.status==='fulfilled'?ctr.value.queues:null;
     if(cQ&&tQ)saveBullH(cQ,tQ);
-    renderTopology(cQ,tQ);
+    lastBullData={cQ,tQ};
+    if(bullView==='topo')renderTopology(cQ,tQ);else renderGauges(cQ,tQ);
     renderBullChart();
   }catch(e){console.error('Bull error:',e)}
 }
@@ -524,7 +604,7 @@ function renderPanel(area,tab){
   document.getElementById('panel-body').innerHTML=`<table class="tbl"><thead><tr><th>Ticket</th><th>Descripción</th><th>Estado</th><th>Asignado</th><th>Proyecto</th><th>Actualizado</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 function setTab(t){activeTab=t;renderPanel(activeArea,t)}
-loadData().then(startPolling);
+(function init(){setBullView(bullView);loadData().then(startPolling);})();
 </script>
 </body>
 </html>
