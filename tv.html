@@ -152,6 +152,72 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 .bull-view-btn{background:rgba(30,45,74,.5);border:1px solid var(--border);color:var(--muted);padding:4px 13px;border-radius:7px;cursor:pointer;font-size:.73rem;font-weight:700;transition:all .15s;white-space:nowrap}
 .bull-view-btn:hover{color:var(--text);border-color:var(--dim)}
 .bull-view-btn.active{background:var(--dim);color:#fff;border-color:transparent}
+/* ── Análisis de fallos · Controller ─────────────────────────────────── */
+.cf-btn{background:rgba(168,85,247,.14);border:1px solid rgba(168,85,247,.45);color:#c084fc;padding:4px 12px;border-radius:7px;cursor:pointer;font-size:.73rem;font-weight:700;white-space:nowrap}
+.cf-btn:hover{background:rgba(168,85,247,.26);color:#fff}
+.cf-alert{display:flex;align-items:center;gap:10px;border-radius:10px;padding:10px 14px;cursor:pointer;border:1.5px solid}
+.cf-alert:hover{filter:brightness(1.15)}
+.cf-alert-t{font-size:.84rem;font-weight:800;letter-spacing:.4px}
+.cf-alert-s{font-size:.77rem;opacity:.85;margin-top:3px}
+.cf-alert-go{margin-left:auto;font-size:.74rem;font-weight:700;opacity:.8;white-space:nowrap}
+.lv-cert{color:#f87171;border-color:#ef4444;background:linear-gradient(90deg,rgba(239,68,68,.22),rgba(168,85,247,.1));animation:sifen-pulse 1.4s ease infinite}
+.lv-sifen{color:#fbbf24;border-color:#f59e0b;background:linear-gradient(90deg,rgba(245,158,11,.2),rgba(249,115,22,.1));animation:blink 1.5s ease infinite}
+.lv-multi{color:#fb923c;border-color:#f97316;background:linear-gradient(90deg,rgba(249,115,22,.18),rgba(245,158,11,.06))}
+.lv-info{color:#93c5fd;border-color:#3b82f6;background:linear-gradient(90deg,rgba(59,130,246,.14),rgba(59,130,246,.03))}
+.cf-overlay{position:fixed;inset:0;background:rgba(3,6,15,.72);backdrop-filter:blur(3px);z-index:50;display:none;justify-content:flex-end}
+.cf-overlay.open{display:flex}
+.cf-panel{width:min(1080px,94vw);height:100vh;overflow-y:auto;background:#0e1424;border-left:1px solid var(--border);padding:26px 30px 40px;position:relative;box-shadow:-20px 0 60px rgba(0,0,0,.5)}
+.cf-close{position:absolute;top:14px;right:18px;background:var(--border);border:none;color:var(--text);width:34px;height:34px;border-radius:8px;font-size:1.3rem;cursor:pointer}
+.cf-close:hover{background:var(--dim)}
+.cf-kicker{font-size:.7rem;color:var(--muted);letter-spacing:1.4px;text-transform:uppercase;font-weight:700}
+.cf-panel h2{font-size:1.5rem;font-weight:800;color:#fff;margin:4px 0 2px}
+.cf-panel h3{font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px}
+.cf-panel section{margin-top:22px}
+.cf-sub,.cf-note{font-size:.78rem;color:var(--muted)}
+.cf-note{margin:4px 0 10px}
+.cf-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding-right:44px}
+.cf-a{color:#60a5fa;text-decoration:none;font-size:.8rem;font-weight:600;white-space:nowrap}
+.cf-a:hover{text-decoration:underline}
+.cf-link{background:none;border:none;color:#60a5fa;cursor:pointer;font-size:.8rem;font-weight:600;padding:0}
+.cf-link:hover{text-decoration:underline}
+.cf-verdict{margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:16px;border:1.5px solid;border-radius:12px;padding:14px 18px}
+.cf-verdict-k{font-size:.7rem;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;opacity:.8}
+.cf-verdict-t{font-size:1.05rem;font-weight:800;margin-top:3px}
+.cf-verdict-s{font-size:.82rem;margin-top:3px;opacity:.9}
+.cf-verdict-n{font-size:2.2rem;font-weight:900;white-space:nowrap}
+.cf-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.cf-metric{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;text-align:left;cursor:pointer;color:var(--text)}
+.cf-metric:hover{border-color:var(--dim);transform:translateY(-2px)}
+.cf-metric span{display:block;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:700}
+.cf-metric strong{display:block;font-size:2rem;font-weight:900;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.cf-metric small{font-size:.7rem;color:#60a5fa}
+.cf-sec-hd{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.cf-clients{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cf-client{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:left;cursor:pointer;color:var(--text)}
+.cf-client:hover{border-color:var(--dim)}
+.cf-client span{display:block;font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cf-client strong{display:block;font-family:'Courier New',monospace;font-size:.8rem;color:#c084fc;margin-top:3px}
+.cf-client small{display:block;font-size:.72rem;color:var(--muted);margin-top:3px}
+.cf-client .cf-wait{color:#fb923c;font-weight:700}
+.cf-input{background:#0b1120;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 12px;font-size:.82rem;width:340px;outline:none}
+.cf-input:focus{border-color:#3b82f6}
+.cf-log .tbl td{font-size:.8rem}
+.cf-err{max-width:340px;color:#fca5a5;font-family:'Courier New',monospace;font-size:.74rem;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cf-mono{font-family:'Courier New',monospace;font-size:.76rem;color:#c084fc}
+.cf-sem{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.cf-svc{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.cf-svc strong{display:block;font-size:.8rem}
+.cf-svc small{display:block;font-size:.72rem;color:var(--muted);margin-top:2px}
+.cf-light{width:16px;height:16px;border-radius:50%;flex-shrink:0;background:var(--dim)}
+.cf-light.verde{background:#22c55e;box-shadow:0 0 10px rgba(34,197,94,.6)}
+.cf-light.amarillo{background:#f59e0b;box-shadow:0 0 10px rgba(245,158,11,.6)}
+.cf-light.rojo{background:#ef4444;box-shadow:0 0 10px rgba(239,68,68,.7);animation:sem-pulse 1s ease infinite}
+.cf-dl{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;margin:14px 0;font-size:.84rem}
+.cf-dl dt{color:var(--muted);font-weight:700}
+.cf-pre{background:#070b16;border:1px solid var(--border);border-radius:8px;padding:12px;font-family:'Courier New',monospace;font-size:.74rem;color:#cbd5e1;white-space:pre-wrap;word-break:break-word;max-height:360px;overflow:auto;margin:8px 0 16px}
+.cf-row{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:6px;color:var(--text);font-size:.8rem;cursor:pointer;text-decoration:none}
+.cf-row:hover{border-color:var(--dim)}
+.cf-empty{color:var(--muted);font-size:.84rem;padding:14px 0}
 </style>
 </head>
 <body>
@@ -233,6 +299,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
           <button id="btn-view-topo" class="bull-view-btn active" onclick="setBullView('topo')">🗺 Mapa</button>
           <button id="btn-view-gauge" class="bull-view-btn" onclick="setBullView('gauge')">📊 Gauges</button>
         </div>
+        <button class="cf-btn" onclick="openCtrlModal()" title="Análisis de fallos de consultaDocumentoCore">🔎 Análisis Controller <span id="cf-btn-n"></span></button>
         <div class="bull-topo-leg" id="topo-legend">
           <span style="display:flex;align-items:center;gap:4px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(34,197,94,.15);border:1px solid #22c55e"></i>OK</span>
           <span style="display:flex;align-items:center;gap:4px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(245,158,11,.18);border:1px solid #f59e0b"></i>Advertencia</span>
@@ -261,6 +328,42 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 </div>
 
 <div class="foot" id="foot"></div>
+
+<!-- Panel lateral · Análisis de fallos del Controller (consultaDocumentoCore) -->
+<div class="cf-overlay" id="cf-overlay" onclick="if(event.target===this)closeCtrlModal()">
+  <aside class="cf-panel" role="dialog" aria-modal="true" aria-label="Análisis de fallos del Controller">
+    <button class="cf-close" onclick="closeCtrlModal()" aria-label="Cerrar">×</button>
+    <div id="cf-main">
+      <div class="cf-head">
+        <div>
+          <div class="cf-kicker">Futura100 · Controller · consultaDocumentoCore</div>
+          <h2>Análisis de fallos</h2>
+          <div class="cf-sub" id="cf-status">Consultando…</div>
+        </div>
+        <a class="cf-a" href="https://controller-monitor.futura100.com.py/admin/trabajos/queue/consultaDocumentoCore?status=failed" target="_blank" rel="noreferrer">↗ Abrir cola en el monitor</a>
+      </div>
+      <div id="cf-verdict"></div>
+      <div id="cf-metrics" class="cf-metrics"></div>
+      <section>
+        <div class="cf-sec-hd"><h3>Clientes afectados</h3><button id="cf-allcli" class="cf-link" onclick="cfToggleClients()"></button></div>
+        <p class="cf-note">Nombre del emisor cuando aparece en Data o XML (dNomEmi). dNomRec es el receptor y no se usa.</p>
+        <div id="cf-clients" class="cf-clients"></div>
+      </section>
+      <section>
+        <div class="cf-sec-hd"><h3>Registro de fallos</h3><input id="cf-q" class="cf-input" placeholder="Buscar cliente, RUC, documento o error" oninput="cfUi.query=this.value;renderCfLog()"></div>
+        <p class="cf-note">Hasta diez trabajos, ordenados por hora de fallo. Los indicadores abarcan todos los Failed obtenidos.</p>
+        <div id="cf-log" class="cf-log"></div>
+      </section>
+      <section>
+        <div class="cf-sec-hd"><h3>Semáforo SIFEN</h3><a class="cf-a" href="https://semaforo-sifen.dnit.gov.py/" target="_blank" rel="noreferrer">↗ Página oficial DNIT</a></div>
+        <p class="cf-note" id="cf-sem-st">Consultando…</p>
+        <div id="cf-sem" class="cf-sem"></div>
+      </section>
+      <p class="cf-note" style="margin-top:22px">Los mensajes son hipótesis para revisar: ningún patrón prueba la causa sin verificar el Error de cada trabajo y el semáforo.</p>
+    </div>
+    <div id="cf-detail" style="display:none"></div>
+  </aside>
+</div>
 
 <script>
 const PROXY='https://main.dashboard-bepa.pages.dev/api/jira';
@@ -474,11 +577,13 @@ function renderTopology(cQ,tQ){
   <text x="380" y="103" text-anchor="middle" font-size="8" fill="#4a6a9f" font-family="Segoe UI,Arial,sans-serif">↗ monitor</text>
   </a>
   ${tFailed>0?`<circle cx="380" cy="158" r="42" fill="none" stroke="${tClr}" stroke-width="1"><animate attributeName="r" values="36;44;36" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values=".4;0;.4" dur="1s" repeatCount="indefinite"/></circle>`:''}
-  <a href="https://controller-monitor.futura100.com.py/admin/trabajos/" target="_blank">
+  <g style="cursor:pointer" onclick="openCtrlModal()"><title>Ver análisis de fallos del Controller</title>
   <circle cx="380" cy="158" r="34" fill="${sf(tFailed)}" stroke="${tClr}" stroke-width="1.5"/>
   <text x="380" y="149" text-anchor="middle" font-size="11" font-weight="700" fill="${tClr}" font-family="Segoe UI,Arial,sans-serif">CTRL</text>
   <text x="380" y="165" text-anchor="middle" font-size="17" font-weight="900" fill="${tClr}" font-family="Segoe UI,Arial,sans-serif">${tFailed===0?'✓':tFailed}</text>
-  <text x="380" y="177" text-anchor="middle" font-size="8" fill="${tFailed>0?tClr:'#3a4a66'}" font-family="Segoe UI,Arial,sans-serif">${tFailed>0?'errores':tActive>0?tActive+' act':'ok'}</text>
+  <text x="380" y="177" text-anchor="middle" font-size="8" fill="${tFailed>0?tClr:'#3a4a66'}" font-family="Segoe UI,Arial,sans-serif">${tFailed>0?'🔎 análisis':tActive>0?tActive+' act':'ok'}</text>
+  </g>
+  <a href="https://controller-monitor.futura100.com.py/admin/trabajos/" target="_blank">
   <text x="380" y="189" text-anchor="middle" font-size="8" fill="#4a6a9f" font-family="Segoe UI,Arial,sans-serif">↗ monitor</text>
   </a>
   ${aln(414,72,526,56,cClr,.8)}
@@ -522,59 +627,287 @@ function renderBullChart(){
   const yAx=ticks.map(v=>`<line x1="${pl}" y1="${py(v).toFixed(1)}" x2="${W-pr}" y2="${py(v).toFixed(1)}" stroke="#1e2d47" stroke-width="1"/><text x="${pl-4}" y="${(py(v)+4).toFixed(1)}" text-anchor="end" fill="#3a4a66" font-size="10" font-family="Segoe UI,Arial,sans-serif">${v}</text>`).join('');
   svg.innerHTML=yAx+path(cf,'#3b82f6','#3b82f6')+path(tf,'#a855f7','#a855f7')+lastDot(cf,'#60a5fa')+lastDot(tf,'#c084fc');
 }
-/* ── Diagnóstico consultaDocumentoCore ───────────────────────────────── */
-let ctrlDiag=null;
-async function loadConsultaDiag(failedCount){
-  if(failedCount<10){
-    if(ctrlDiag!==null){ctrlDiag=null;renderCtrlDiag();}
-    return;
+/* ── Análisis de fallos · Controller (consultaDocumentoCore) ─────────────
+   Portado de failed-dashboard (React). Lee todos los Failed de la cola vía
+   /api/bull-failed (Pages Function), normaliza cada job y arma el diagnóstico:
+   1 RUC con lotes "En proceso" → revisar certificado · 2 → verificar cada error
+   3-4 → revisar cada cliente · ≥5 → posible intermitencia SIFEN.            */
+const API_BASE='https://main.dashboard-bepa.pages.dev/api';
+const CTRL_Q='consultaDocumentoCore';
+const CTRL_MON='https://controller-monitor.futura100.com.py/admin/trabajos/';
+const cfQueueUrl=(q,st)=>`${CTRL_MON}queue/${encodeURIComponent(q)}?status=${st}`;
+const escA=s=>esc(s??'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const firstOf=(...v)=>v.find(x=>x!==undefined&&x!==null&&x!=='')??'';
+function jparse(v){if(typeof v!=='string')return v;try{return JSON.parse(v)}catch{return v}}
+function findField(v,k,d=0){
+  const o=jparse(v);if(!o||typeof o!=='object'||d>6)return undefined;
+  if(o[k]!=null)return o[k];
+  for(const c of Object.values(o)){const f=findField(c,k,d+1);if(f!==undefined)return f}
+  return undefined;
+}
+function xmlText(v){if(!v)return'';try{const x=new DOMParser().parseFromString(`<v>${v}</v>`,'application/xml');return x.querySelector('v')?.textContent||v}catch{return v}}
+function toDt(v){if(!v)return null;const d=new Date(typeof v==='number'&&v<1e12?v*1000:v);return isNaN(d.valueOf())?null:d}
+function fmtDt(d){if(!d)return'No disponible';return new Intl.DateTimeFormat('es-PY',{timeZone:'America/Asuncion',dateStyle:'short',timeStyle:'medium'}).format(d)}
+
+function normJob(job,queue){
+  const data=jparse(job.data)||{};
+  const doc=data.jobData?.jsonData||data.jsonData||data;
+  const lot=String(firstOf(doc.nro_lote,data.jobData?.nro_lote,findField(data,'nro_lote')));
+  const xv=findField(data,'xml');const xml=typeof xv==='string'?xv:'';
+  const ruc=String(firstOf(data.jobData?.empresa?.ruc,data.empresa?.ruc,lot.match(/^(\d{6,12})-/)?.[1],xml.match(/<dRucEm>(\d+)<\/dRucEm>/)?.[1]));
+  const ld=lot.match(/-(\d{3})-(\d{3})-(\d{7})(?:-|$)/);
+  const number=String(firstOf(doc.nro_documento,findField(data,'nro_documento'),ld?`${ld[1]}-${ld[2]}-${ld[3]}`:undefined));
+  // dNomRec es el RECEPTOR; para el emisor solo razón social del job o dNomEmi del XML.
+  const name=xmlText(String(firstOf(data.jobData?.empresa?.razon_social,data.empresa?.razon_social,data.empresa?.nombre,xml.match(/<dNomEmi>([^<]+)<\/dNomEmi>/)?.[1])));
+  const ev=firstOf(job.failedReason,job.error,job.stacktrace?.[0]);
+  const error=typeof ev==='string'?ev:ev?JSON.stringify(ev):'';
+  let ef={};try{ef=JSON.parse(error.match(/\{[^{}]*"estado_documento"[^{}]*\}/)?.[0])}catch{}
+  return{id:String(job.id??''),queue,ruc,name,number,lot,error,
+    status:String(firstOf(ef.estado_documento)),
+    failedAt:toDt(firstOf(job.finishedOn,job.failedAt,job.failed_at)),
+    createdAt:toDt(job.timestamp),attempts:firstOf(job.attemptsMade,job.attempts),
+    data,options:job.opts||{},stacktrace:job.stacktrace||[]};
+}
+
+async function cfGet(url){
+  const r=await fetch(url,{cache:'no-store',headers:{Accept:'application/json'}});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+async function readCtrlFailed(){
+  const jobs=[];let page=1,pageCount=1,expected=0;
+  do{
+    const b=await cfGet(`${API_BASE}/bull-failed?queue=${CTRL_Q}&page=${page}&_t=${Date.now()}`);
+    if(b.error)throw new Error(b.error);
+    const q=(b.queues||[]).find(x=>x.name===CTRL_Q);
+    if(!q)throw new Error('No se encontró la cola '+CTRL_Q);
+    jobs.push(...(q.jobs||[]));
+    pageCount=q.pagination?.pageCount||1;
+    expected=q.counts?.failed??jobs.length;
+    page++;
+  }while(page<=pageCount&&page<=40);
+  return{rows:jobs.map(j=>normJob(j,CTRL_Q)),expected};
+}
+
+function cfBuildClients(rows){
+  const m={};
+  for(const r of rows){
+    if(!r.ruc)continue;
+    const c=(m[r.ruc]??={ruc:r.ruc,name:r.name,count:0,documents:new Set(),waiting:0,rows:[]});
+    c.rows.push(r);c.count++;
+    if(r.number)c.documents.add(r.number);
+    if(r.status.toLowerCase()==='en proceso')c.waiting++;
+    if(!c.name&&r.name)c.name=r.name;
   }
+  return Object.values(m).sort((a,b)=>b.count-a.count);
+}
+function cfAssess(rows,clients){
+  if(!rows.length)return null;
+  const p=clients.filter(c=>c.waiting>0),n=p.length;
+  if(n>=5)return{lv:'sifen',icon:'⚡',title:'POSIBLE INTERMITENCIA SIFEN',text:`${n} RUC distintos con lotes en proceso. Verificar errores y semáforo.`};
+  if(n>=3)return{lv:'multi',icon:'⚠️',title:`${n} CLIENTES CON LOTES EN PROCESO`,text:'Revisar cada caso y sus certificados.'};
+  if(n===2)return{lv:'multi',icon:'⚠️',title:'DOS CLIENTES CON LOTES EN PROCESO',text:'Verificar cada error antes de atribuir una causa común.'};
+  if(n===1){const c=p[0];return{lv:'cert',icon:'🔐',title:`POSIBLE ERROR EN CERTIFICADO · RUC ${c.ruc}`,text:`${c.name?c.name+' · ':''}${c.waiting} lote(s) en proceso. Revisar respuesta del lote y certificado del cliente.`}}
+  return{lv:'info',icon:'ℹ️',title:`${rows.length} FALLO(S) SIN LOTES EN PROCESO`,text:'No se detectaron lotes en proceso entre los trabajos consultados. Revisar el Error de cada trabajo.'};
+}
+
+const cf={rows:[],clients:[],assess:null,error:'',time:null,running:false};
+const cfUi={open:false,query:'',allClients:false,list:null,sel:null};
+const cfSem={rows:[],error:'',time:null,timer:null};
+
+async function loadCtrlFailed(failedCount){
+  if(!failedCount){
+    Object.assign(cf,{rows:[],clients:[],assess:null,error:'',time:new Date()});
+    renderCfAll();return;
+  }
+  if(cf.running)return;
+  cf.running=true;
   try{
-    const r=await fetch('https://controller-monitor.futura100.com.py/admin/trabajos/queue/consultaDocumentoCore?status=failed');
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    const d=await r.json();
-    const jobs=Array.isArray(d)?d:(d.jobs||d.data||[]);
-    const rucs=[...new Set(jobs.map(j=>j.jobData?.empresa?.ruc||j.data?.empresa?.ruc).filter(Boolean))];
-    if(rucs.length===0){ctrlDiag=null;}
-    else if(rucs.length===1){ctrlDiag={type:'cert',ruc:rucs[0],n:jobs.length};}
-    else{ctrlDiag={type:'intermitencia',rucs,n:jobs.length};}
-  }catch(e){console.warn('consultaDiag error:',e);ctrlDiag=null;}
-  renderCtrlDiag();
+    const{rows}=await readCtrlFailed();
+    const names={};rows.forEach(r=>{if(r.ruc&&r.name)names[r.ruc]=r.name});
+    rows.forEach(r=>{if(!r.name)r.name=names[r.ruc]||''});
+    cf.rows=rows;cf.clients=cfBuildClients(rows);cf.assess=cfAssess(rows,cf.clients);
+    cf.error='';cf.time=new Date();
+  }catch(e){
+    console.warn('Análisis Controller:',e);
+    cf.error='Sin conexión con Controller: '+e.message;
+    if(!cf.rows.length)cf.assess={lv:'info',icon:'⚠️',title:`${failedCount} FALLO(S) · ANÁLISIS NO DISPONIBLE`,text:cf.error};
+  }finally{cf.running=false}
+  renderCfAll();
 }
-function renderCtrlDiag(){
-  const el=document.getElementById('ctrl-diag-alert');if(!el)return;
-  if(!ctrlDiag){el.style.display='none';el.innerHTML='';return;}
+
+function renderCfAlert(){
+  const el=document.getElementById('ctrl-diag-alert');
+  const bn=document.getElementById('cf-btn-n');
+  if(bn)bn.textContent=cf.rows.length?`(${cf.rows.length})`:'';
+  if(!el)return;
+  const a=cf.assess;
+  if(!a){el.style.display='none';el.innerHTML='';return}
   el.style.display='block';
-  const isErr=ctrlDiag.type==='cert';
-  const clr=isErr?'#f87171':'#fbbf24';
-  const bg=isErr?'linear-gradient(90deg,rgba(239,68,68,.22),rgba(168,85,247,.1))':'linear-gradient(90deg,rgba(245,158,11,.2),rgba(249,115,22,.1))';
-  const brd=isErr?'#ef4444':'#f59e0b';
-  const icon=isErr?'🔐':'⚡';
-  const ttl=isErr?'ERROR EN CERTIFICADO · Consulta Doc. Core':'INTERMITENCIA SIFEN · Consulta Doc. Core';
-  const sub=isErr?`RUC: <strong>${ctrlDiag.ruc}</strong> · ${ctrlDiag.n} jobs fallidos del mismo RUC`:`${ctrlDiag.n} jobs fallidos · ${ctrlDiag.rucs?.length||'varios'} empresas distintas`;
-  const anim=isErr?'animation:sifen-pulse 1.4s ease infinite':'animation:blink 1.5s ease infinite';
-  el.innerHTML=`<div style="display:flex;align-items:center;gap:9px;background:${bg};border:1.5px solid ${brd};border-radius:10px;padding:10px 14px;${anim}">
-    <span style="font-size:1.15rem;flex-shrink:0">${icon}</span>
-    <div>
-      <div style="font-size:.82rem;font-weight:800;color:${clr};letter-spacing:.4px">${ttl}</div>
-      <div style="font-size:.77rem;color:${clr};opacity:.85;margin-top:3px">${sub}</div>
-    </div>
-  </div>`;
+  el.innerHTML=`<div class="cf-alert lv-${a.lv}" onclick="openCtrlModal()" title="Ver análisis completo">
+    <span style="font-size:1.15rem;flex-shrink:0">${a.icon}</span>
+    <div><div class="cf-alert-t">${esc(a.title)} · Consulta Doc. Core</div>
+    <div class="cf-alert-s">${esc(a.text)}${cf.rows.length?` · ${cf.rows.length} caso(s) · ${cf.clients.length} RUC`:''}</div></div>
+    <span class="cf-alert-go">Ver análisis ›</span></div>`;
 }
+
+function renderCfAll(){renderCfAlert();if(cfUi.open)renderCtrlModal()}
+
+/* ── Panel lateral ─────────────────────────────────────────────────────── */
+function openCtrlModal(){
+  cfUi.open=true;cfUi.list=null;cfUi.sel=null;
+  document.getElementById('cf-overlay').classList.add('open');
+  renderCtrlModal();cfShowMain();
+  loadSemaforo();clearInterval(cfSem.timer);cfSem.timer=setInterval(loadSemaforo,60000);
+  // Si todavía no hay datos, forzar lectura
+  if(!cf.time){const q=(lastBullData?.tQ||[]).find(x=>x.name===CTRL_Q);loadCtrlFailed(q?.counts?.failed||0)}
+}
+function closeCtrlModal(){
+  cfUi.open=false;clearInterval(cfSem.timer);cfSem.timer=null;
+  document.getElementById('cf-overlay').classList.remove('open');
+}
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape'||!cfUi.open)return;
+  if(cfUi.sel||cfUi.list)cfShowMain();else closeCtrlModal();
+});
+function cfShowMain(){
+  cfUi.sel=null;cfUi.list=null;
+  document.getElementById('cf-main').style.display='block';
+  document.getElementById('cf-detail').style.display='none';
+}
+function cfShowDetail(html){
+  const d=document.getElementById('cf-detail');
+  d.innerHTML=`<button class="cf-link" onclick="cfShowMain()" style="margin-bottom:10px">‹ Volver al análisis</button>`+html;
+  document.getElementById('cf-main').style.display='none';d.style.display='block';
+  document.querySelector('.cf-panel').scrollTop=0;
+}
+
+function renderCtrlModal(){
+  const st=document.getElementById('cf-status');
+  st.textContent=cf.error||(cf.time?`Última lectura: ${fmtDt(cf.time)} · se actualiza con el dashboard (20s)`:'Consultando…');
+  st.style.color=cf.error?'#f87171':'';
+  const a=cf.assess||{lv:'info',icon:'✅',title:'SIN FALLOS EN CONSULTA DOC. CORE',text:'No hay trabajos Failed en la cola.'};
+  document.getElementById('cf-verdict').innerHTML=`<div class="cf-verdict lv-${a.lv}" style="animation:none">
+    <div><div class="cf-verdict-k">Análisis de inconvenientes</div><div class="cf-verdict-t">${a.icon} ${esc(a.title)}</div><div class="cf-verdict-s">${esc(a.text)}</div></div>
+    <div class="cf-verdict-n">${cf.rows.length} <span style="font-size:.9rem;font-weight:700">casos</span></div></div>`;
+  const multi=cf.clients.filter(c=>c.count>1);
+  const affQ=(lastBullData?.tQ||[]).filter(q=>(q.counts?.failed||0)>0);
+  const waitingLots=cf.clients.reduce((s,c)=>s+c.waiting,0);
+  const met=(lbl,val,key,sub)=>`<button class="cf-metric" onclick="cfOpenMetric('${key}')"><span>${lbl}</span><strong>${val}</strong><small>${sub||'Ver detalle'}</small></button>`;
+  document.getElementById('cf-metrics').innerHTML=
+    met('Inconvenientes',cf.rows.length,'rows',waitingLots?`${waitingLots} lote(s) en proceso`:'')+
+    met('Clientes identificados',cf.clients.length,'clients')+
+    met('Clientes con varios casos',multi.length,'multi')+
+    met('Colas afectadas',affQ.length,'queues','Todas las colas del Controller');
+  renderCfClients();renderCfLog();renderCfSem();
+}
+function renderCfClients(){
+  const el=document.getElementById('cf-clients'),bt=document.getElementById('cf-allcli');
+  const list=cf.clients.slice(0,cfUi.allClients?undefined:4);
+  bt.style.display=cf.clients.length>4?'':'none';
+  bt.textContent=cfUi.allClients?'Mostrar 4':`Ver todos (${cf.clients.length})`;
+  el.innerHTML=list.map(c=>`<button class="cf-client" onclick="cfOpenClient('${escA(c.ruc)}')">
+      <span title="${escA(c.name||'Nombre no disponible')}">${esc(c.name||'Nombre no disponible')}</span>
+      <strong>RUC ${esc(c.ruc)}</strong>
+      <small>${c.count} caso(s) · ${c.documents.size} documento(s)${c.waiting?` · <b class="cf-wait">${c.waiting} en proceso</b>`:''}</small>
+    </button>`).join('')||'<p class="cf-empty">No se identificaron emisores en estos trabajos.</p>';
+}
+function cfToggleClients(){cfUi.allClients=!cfUi.allClients;renderCfClients()}
+function renderCfLog(){
+  const q=cfUi.query.toLocaleLowerCase('es');
+  const vis=cf.rows.filter(r=>`${r.ruc} ${r.name} ${r.number} ${r.queue} ${r.error}`.toLocaleLowerCase('es').includes(q))
+    .sort((a,b)=>(b.failedAt?.getTime()||0)-(a.failedAt?.getTime()||0)).slice(0,10);
+  const el=document.getElementById('cf-log');
+  if(!vis.length){el.innerHTML=`<p class="cf-empty">${cf.rows.length?'Sin casos que coincidan con la búsqueda.':'Sin trabajos Failed.'}</p>`;return}
+  el.innerHTML=`<table class="tbl"><thead><tr><th>Hora</th><th>Cliente y RUC</th><th>Documento</th><th>Situación</th><th>Mensaje del sistema</th><th></th></tr></thead><tbody>${
+    vis.map(r=>`<tr><td class="tbl-date">${fmtDt(r.failedAt)}</td>
+      <td>${esc(r.name||'Nombre no disponible')}<br><span class="cf-mono">${esc(r.ruc||'RUC no disponible')}</span></td>
+      <td class="tbl-key">${esc(r.number||'—')}</td>
+      <td>${r.status?`<span class="badge ${r.status.toLowerCase()==='en proceso'?'b-por':'b-pau'}">${esc(r.status)}</span>`:'<span class="tbl-who">Revisar error</span>'}</td>
+      <td><div class="cf-err" title="${escA(r.error)}">${esc(r.error||'Sin mensaje')}</div></td>
+      <td><button class="cf-link" onclick="cfOpenJob('${escA(r.id)}')">Ver todo</button></td></tr>`).join('')
+  }</tbody></table>`;
+}
+
+/* Detalle: listas (métricas / cliente) y trabajo completo */
+function cfListHtml(title,items){
+  cfUi.list=items;
+  return`<h2>${esc(title)}</h2><p class="cf-sub" style="margin-bottom:12px">${items.length} resultado(s)</p>`+
+    (items.map((it,i)=>it.rows
+      ?`<button class="cf-row" onclick="cfOpenClient('${escA(it.ruc)}')">${esc(it.name||'Nombre no disponible')} · <span class="cf-mono">RUC ${esc(it.ruc)}</span> · ${it.count} caso(s)${it.waiting?` · <b style="color:#fb923c">${it.waiting} en proceso</b>`:''}</button>`
+      :it.qname
+      ?`<a class="cf-row" href="${escA(cfQueueUrl(it.qname,'failed'))}" target="_blank" rel="noreferrer">${esc(it.qname)} · <b style="color:#f87171">${it.count} inconvenientes</b> ↗</a>`
+      :`<button class="cf-row" onclick="cfOpenJob('${escA(it.id)}')"><span class="tbl-date">${fmtDt(it.failedAt)}</span> · ${esc(it.name||'Nombre no disponible')} · <span class="cf-mono">RUC ${esc(it.ruc||'—')}</span> · ${esc(it.number||'Sin documento')}${it.status?` · <b>${esc(it.status)}</b>`:''}<div class="cf-err" style="max-width:none;margin-top:4px">${esc(it.error||'Sin mensaje')}</div></button>`
+    ).join('')||'<p class="cf-empty">Sin resultados.</p>');
+}
+function cfOpenMetric(k){
+  const sortRows=r=>[...r].sort((a,b)=>(b.failedAt?.getTime()||0)-(a.failedAt?.getTime()||0));
+  if(k==='rows')cfShowDetail(cfListHtml('Inconvenientes',sortRows(cf.rows)));
+  else if(k==='clients')cfShowDetail(cfListHtml('Clientes identificados',cf.clients));
+  else if(k==='multi')cfShowDetail(cfListHtml('Clientes con varios casos',cf.clients.filter(c=>c.count>1)));
+  else if(k==='queues')cfShowDetail(cfListHtml('Colas afectadas · Controller',(lastBullData?.tQ||[]).filter(q=>(q.counts?.failed||0)>0).map(q=>({qname:q.name,count:q.counts.failed}))));
+}
+function cfOpenClient(ruc){
+  const c=cf.clients.find(x=>x.ruc===ruc);if(!c)return;
+  cfShowDetail(cfListHtml(`${c.name||'Nombre no disponible'} · RUC ${c.ruc}`,[...c.rows].sort((a,b)=>(b.failedAt?.getTime()||0)-(a.failedAt?.getTime()||0))));
+}
+function cfOpenJob(id){
+  const r=cf.rows.find(x=>x.id===id);if(!r)return;
+  cfUi.sel=r;
+  const pre=v=>`<pre class="cf-pre">${esc(typeof v==='string'?v:JSON.stringify(v,null,2))}</pre>`;
+  cfShowDetail(`<h2>Trabajo #${esc(r.id)}</h2>
+    <p class="cf-sub">${esc(r.name||'Nombre no disponible')} · RUC <span class="cf-mono">${esc(r.ruc||'No disponible')}</span></p>
+    <dl class="cf-dl">
+      <dt>Cola</dt><dd>${esc(r.queue)}</dd>
+      <dt>Documento</dt><dd>${esc(r.number||'No disponible')}</dd>
+      <dt>Lote</dt><dd class="cf-mono">${esc(r.lot||'No disponible')}</dd>
+      <dt>Situación</dt><dd>${esc(r.status||'Revisar error')}</dd>
+      <dt>Hora del fallo</dt><dd>${fmtDt(r.failedAt)}</dd>
+      <dt>Creado</dt><dd>${fmtDt(r.createdAt)}</dd>
+      <dt>Intentos</dt><dd>${esc(r.attempts===''?'No disponible':r.attempts)}</dd>
+    </dl>
+    <h3>Error original</h3>${pre(r.error||'No disponible')}
+    <h3>Data</h3>${pre(r.data)}
+    <h3>Options</h3>${pre(r.options)}
+    <h3>Stacktrace</h3>${pre(r.stacktrace)}
+    <a class="cf-a" href="${escA(cfQueueUrl(r.queue,'failed'))}" target="_blank" rel="noreferrer">↗ Abrir cola de origen</a>`);
+}
+
+/* ── Semáforo SIFEN (solo con el panel abierto, cada 60s) ──────────────── */
+async function loadSemaforo(){
+  try{
+    const b=await cfGet(`${API_BASE}/sifen-semaforo?_t=${Date.now()}`);
+    if(!Array.isArray(b.data))throw new Error(b.error||'La respuesta no contiene servicios');
+    if(JSON.stringify(b.data)!==JSON.stringify(cfSem.rows)){cfSem.rows=b.data;cfSem.time=new Date()}
+    cfSem.error='';
+  }catch(e){cfSem.error='Servicio SIFEN no disponible: '+e.message}
+  renderCfSem();
+}
+function renderCfSem(){
+  const st=document.getElementById('cf-sem-st');if(!st)return;
+  st.textContent=cfSem.error||(cfSem.time?`Último cambio observado: ${fmtDt(cfSem.time)} · consulta cada minuto`:'Consultando…');
+  st.style.color=cfSem.error?'#f87171':'';
+  document.getElementById('cf-sem').innerHTML=cfSem.rows.map(s=>{
+    const e=String(s.estado||'').toUpperCase();
+    return`<div class="cf-svc"><span class="cf-light ${escA(e.toLowerCase())}"></span><div>
+      <strong>${esc(s.nombreServicio||'Servicio')}</strong>
+      <small>${esc(e||'No disponible')} · ${e==='ROJO'||s.tiempoPromedio==null?'Tiempo no disponible':esc(s.tiempoPromedio)+' ms'}</small></div></div>`;
+  }).join('')||`<p class="cf-empty">${esc(cfSem.error||'Sin servicios en la respuesta.')}</p>`;
+}
+
 async function loadBullData(){
   try{
     const[cr,ctr]=await Promise.allSettled([
-      fetch('https://main.dashboard-bepa.pages.dev/api/bull-core').then(r=>r.json()),
-      fetch('https://main.dashboard-bepa.pages.dev/api/bull-controller').then(r=>r.json())
+      fetch(`${API_BASE}/bull-core`).then(r=>r.json()),
+      fetch(`${API_BASE}/bull-controller`).then(r=>r.json())
     ]);
     const cQ=cr.status==='fulfilled'?cr.value.queues:null;
     const tQ=ctr.status==='fulfilled'?ctr.value.queues:null;
     if(cQ&&tQ)saveBullH(cQ,tQ);
     lastBullData={cQ,tQ};
     if(bullView==='topo')renderTopology(cQ,tQ);else renderGauges(cQ,tQ);
-    // Diagnóstico consultaDocumentoCore
-    const cdcQ=(tQ||[]).find(q=>q.name==='consultaDocumentoCore');
-    loadConsultaDiag(cdcQ?.counts?.failed||0);
+    // Análisis de fallos de consultaDocumentoCore (solo si la cola respondió)
+    if(tQ){const cdcQ=tQ.find(q=>q.name===CTRL_Q);loadCtrlFailed(cdcQ?.counts?.failed||0)}
   }catch(e){console.error('Bull error:',e)}
 }
 
