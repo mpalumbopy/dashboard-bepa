@@ -204,14 +204,6 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
 .cf-log .tbl td{font-size:.8rem}
 .cf-err{max-width:340px;color:#fca5a5;font-family:'Courier New',monospace;font-size:.74rem;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .cf-mono{font-family:'Courier New',monospace;font-size:.76rem;color:#c084fc}
-.cf-sem{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
-.cf-svc{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
-.cf-svc strong{display:block;font-size:.8rem}
-.cf-svc small{display:block;font-size:.72rem;color:var(--muted);margin-top:2px}
-.cf-light{width:16px;height:16px;border-radius:50%;flex-shrink:0;background:var(--dim)}
-.cf-light.verde{background:#22c55e;box-shadow:0 0 10px rgba(34,197,94,.6)}
-.cf-light.amarillo{background:#f59e0b;box-shadow:0 0 10px rgba(245,158,11,.6)}
-.cf-light.rojo{background:#ef4444;box-shadow:0 0 10px rgba(239,68,68,.7);animation:sem-pulse 1s ease infinite}
 .cf-dl{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;margin:14px 0;font-size:.84rem}
 .cf-dl dt{color:var(--muted);font-weight:700}
 .cf-pre{background:#070b16;border:1px solid var(--border);border-radius:8px;padding:12px;font-family:'Courier New',monospace;font-size:.74rem;color:#cbd5e1;white-space:pre-wrap;word-break:break-word;max-height:360px;overflow:auto;margin:8px 0 16px}
@@ -354,12 +346,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-se
         <p class="cf-note">Hasta diez trabajos, ordenados por hora de fallo. Los indicadores abarcan todos los Failed obtenidos.</p>
         <div id="cf-log" class="cf-log"></div>
       </section>
-      <section>
-        <div class="cf-sec-hd"><h3>Semáforo SIFEN</h3><a class="cf-a" href="https://semaforo-sifen.dnit.gov.py/" target="_blank" rel="noreferrer">↗ Página oficial DNIT</a></div>
-        <p class="cf-note" id="cf-sem-st">Consultando…</p>
-        <div id="cf-sem" class="cf-sem"></div>
-      </section>
-      <p class="cf-note" style="margin-top:22px">Los mensajes son hipótesis para revisar: ningún patrón prueba la causa sin verificar el Error de cada trabajo y el semáforo.</p>
+      <p class="cf-note" style="margin-top:22px">Los mensajes son hipótesis para revisar: ningún patrón prueba la causa sin verificar el Error de cada trabajo.</p>
     </div>
     <div id="cf-detail" style="display:none"></div>
   </aside>
@@ -713,7 +700,6 @@ function cfAssess(rows,clients){
 
 const cf={rows:[],clients:[],assess:null,error:'',time:null,running:false};
 const cfUi={open:false,query:'',allClients:false,list:null,sel:null};
-const cfSem={rows:[],error:'',time:null,timer:null};
 
 async function loadCtrlFailed(failedCount){
   if(!failedCount){
@@ -758,12 +744,11 @@ function openCtrlModal(){
   cfUi.open=true;cfUi.list=null;cfUi.sel=null;
   document.getElementById('cf-overlay').classList.add('open');
   renderCtrlModal();cfShowMain();
-  loadSemaforo();clearInterval(cfSem.timer);cfSem.timer=setInterval(loadSemaforo,60000);
   // Si todavía no hay datos, forzar lectura
   if(!cf.time){const q=(lastBullData?.tQ||[]).find(x=>x.name===CTRL_Q);loadCtrlFailed(q?.counts?.failed||0)}
 }
 function closeCtrlModal(){
-  cfUi.open=false;clearInterval(cfSem.timer);cfSem.timer=null;
+  cfUi.open=false;
   document.getElementById('cf-overlay').classList.remove('open');
 }
 document.addEventListener('keydown',e=>{
@@ -799,7 +784,7 @@ function renderCtrlModal(){
     met('Clientes identificados',cf.clients.length,'clients')+
     met('Clientes con varios casos',multi.length,'multi')+
     met('Colas afectadas',affQ.length,'queues','Todas las colas del Controller');
-  renderCfClients();renderCfLog();renderCfSem();
+  renderCfClients();renderCfLog();
 }
 function renderCfClients(){
   const el=document.getElementById('cf-clients'),bt=document.getElementById('cf-allcli');
@@ -871,28 +856,6 @@ function cfOpenJob(id){
     <h3>Options</h3>${pre(r.options)}
     <h3>Stacktrace</h3>${pre(r.stacktrace)}
     <a class="cf-a" href="${escA(cfQueueUrl(r.queue,'failed'))}" target="_blank" rel="noreferrer">↗ Abrir cola de origen</a>`);
-}
-
-/* ── Semáforo SIFEN (solo con el panel abierto, cada 60s) ──────────────── */
-async function loadSemaforo(){
-  try{
-    const b=await cfGet(`${API_BASE}/sifen-semaforo?_t=${Date.now()}`);
-    if(!Array.isArray(b.data))throw new Error(b.error||'La respuesta no contiene servicios');
-    if(JSON.stringify(b.data)!==JSON.stringify(cfSem.rows)){cfSem.rows=b.data;cfSem.time=new Date()}
-    cfSem.error='';
-  }catch(e){cfSem.error='Servicio SIFEN no disponible: '+e.message}
-  renderCfSem();
-}
-function renderCfSem(){
-  const st=document.getElementById('cf-sem-st');if(!st)return;
-  st.textContent=cfSem.error||(cfSem.time?`Último cambio observado: ${fmtDt(cfSem.time)} · consulta cada minuto`:'Consultando…');
-  st.style.color=cfSem.error?'#f87171':'';
-  document.getElementById('cf-sem').innerHTML=cfSem.rows.map(s=>{
-    const e=String(s.estado||'').toUpperCase();
-    return`<div class="cf-svc"><span class="cf-light ${escA(e.toLowerCase())}"></span><div>
-      <strong>${esc(s.nombreServicio||'Servicio')}</strong>
-      <small>${esc(e||'No disponible')} · ${e==='ROJO'||s.tiempoPromedio==null?'Tiempo no disponible':esc(s.tiempoPromedio)+' ms'}</small></div></div>`;
-  }).join('')||`<p class="cf-empty">${esc(cfSem.error||'Sin servicios en la respuesta.')}</p>`;
 }
 
 async function loadBullData(){
